@@ -507,6 +507,228 @@
     launcher = createChatLauncher(startChat);
   }
 
+  // Animated plexus/constellation background for the brand hero. Canvas + rAF,
+  // paused via IntersectionObserver when off-screen. Returns handles so the
+  // load timeline (intro reveal) and scroll (fade-out) can drive it.
+  function initNetworkCanvas(canvas, opts) {
+    const ctx = canvas.getContext("2d");
+    const reduced = Boolean(opts && opts.reduced);
+    const ACCENT = "251, 191, 36";
+    const LINK_DIST = 150;
+    const MOUSE_RADIUS = 170;
+    const MAX_PUSH = 18;
+    const MAX_SCALE = 1.4;
+    let w = 0, h = 0, dpr = 1, nodes = [], raf = null, running = false, last = 0;
+    let intro = reduced ? 1 : 0; // 0..1 load reveal
+    let scrollAlpha = 1;         // 1 -> 0.4 as the hero scrolls away
+    const mouse = { x: 0, y: 0, active: false };
+    // Only wire up listeners on mouse-driven devices; the RAF loop samples
+    // mouse.x/y itself, the listener just records the raw position.
+    const hasMouse = !reduced && typeof window.matchMedia === "function" && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+    const resize = () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    const build = () => {
+      const count = Math.max(26, Math.min(40, Math.round((w * h) / 42000)));
+      nodes = [];
+      for (let i = 0; i < count; i++) {
+        nodes.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.025,
+          vy: (Math.random() - 0.5) * 0.025,
+          r: 2 + Math.random() * 4,
+          delay: Math.random() * 0.6,
+          pulse: Math.random() * Math.PI * 2,
+          pulseSpeed: 0.6 + Math.random() * 0.8,
+          ox: 0, oy: 0,       // cursor-repel offset, springs back to 0
+          rx: 0, ry: 0,       // rendered position = natural position + offset
+          mouseT: 0,          // 0..1 closeness to cursor, eased
+        });
+      }
+    };
+    const nodeAlpha = (n) => (reduced ? 1 : Math.max(0, Math.min(1, (intro - n.delay) / 0.4)));
+
+    const draw = (dt) => {
+      ctx.clearRect(0, 0, w, h);
+      const mx = mouse.active ? mouse.x : null;
+      const my = mouse.active ? mouse.y : null;
+      // Frame-rate independent spring factor: reaches target over ~120ms,
+      // smooth enough to never feel like a jittery snap-back.
+      const spring = Math.min(1, dt / 120);
+      const cursorLinks = []; // nodes within reach, for the temporary cursor lines
+
+      for (const n of nodes) {
+        n.x += n.vx * dt;
+        n.y += n.vy * dt;
+        if (n.x < 0 || n.x > w) n.vx *= -1;
+        if (n.y < 0 || n.y > h) n.vy *= -1;
+        n.x = Math.max(0, Math.min(w, n.x));
+        n.y = Math.max(0, Math.min(h, n.y));
+        n.pulse += n.pulseSpeed * dt * 0.003;
+        n.deg = 0; // connection count, recomputed each frame for the hub glow
+
+        // Cursor repel: push away from the mouse, strength fades with distance.
+        // Springs back to the natural drift position once out of reach.
+        let targetOx = 0, targetOy = 0, targetT = 0;
+        if (mx !== null) {
+          const dx = n.x - mx, dy = n.y - my;
+          const dist = Math.hypot(dx, dy) || 0.001;
+          if (dist < MOUSE_RADIUS) {
+            const t = 1 - dist / MOUSE_RADIUS; // 0 at radius edge, 1 at cursor
+            targetT = t;
+            const push = t * MAX_PUSH;
+            targetOx = (dx / dist) * push;
+            targetOy = (dy / dist) * push;
+            cursorLinks.push({ n, dist });
+          }
+        }
+        n.ox += (targetOx - n.ox) * spring;
+        n.oy += (targetOy - n.oy) * spring;
+        n.mouseT += (targetT - n.mouseT) * spring;
+        n.rx = n.x + n.ox;
+        n.ry = n.y + n.oy;
+      }
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i], b = nodes[j];
+          const dist = Math.hypot(a.rx - b.rx, a.ry - b.ry);
+          if (dist >= LINK_DIST) continue;
+          a.deg++;
+          b.deg++;
+          const al = (1 - dist / LINK_DIST) * 0.22 * nodeAlpha(a) * nodeAlpha(b) * scrollAlpha;
+          if (al <= 0.003) continue;
+          ctx.strokeStyle = `rgba(${ACCENT}, ${al})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(a.rx, a.ry);
+          ctx.lineTo(b.rx, b.ry);
+          ctx.stroke();
+        }
+      }
+      // Temporary links from the cursor to the 1-3 closest nodes in reach,
+      // same thin low-opacity style as the node-to-node connections.
+      if (mx !== null && cursorLinks.length) {
+        cursorLinks.sort((p, q) => p.dist - q.dist);
+        for (const { n, dist } of cursorLinks.slice(0, 3)) {
+          const al = (1 - dist / MOUSE_RADIUS) * 0.3 * nodeAlpha(n) * scrollAlpha;
+          if (al <= 0.003) continue;
+          ctx.strokeStyle = `rgba(${ACCENT}, ${al})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(mx, my);
+          ctx.lineTo(n.rx, n.ry);
+          ctx.stroke();
+        }
+      }
+      // Additive blending so overlapping halos build up a warm aura.
+      ctx.globalCompositeOperation = "lighter";
+      for (const n of nodes) {
+        const al = nodeAlpha(n) * scrollAlpha;
+        if (al <= 0.003) continue;
+        const glow = Math.sin(n.pulse) * 0.5 + 0.5;
+        // Hub factor: more connections -> larger, stronger glow (visual hierarchy).
+        const hub = Math.min(1, n.deg / 5);
+        // Cursor proximity boosts glow size/intensity on top of the hub factor.
+        const mt = n.mouseT;
+        const core = n.r * (1 + glow * 0.2) * (1 + mt * (MAX_SCALE - 1));
+        const glowR = core * (3 + hub * 4.5 + mt * 3) * (1 + glow * 0.18);
+        // Layered radial halo mirrors a multi-stop box-shadow (tight -> wide, fading).
+        const g = ctx.createRadialGradient(n.rx, n.ry, core * 0.6, n.rx, n.ry, glowR);
+        g.addColorStop(0, `rgba(${ACCENT}, ${Math.min(1, (0.55 + hub * 0.2 + mt * 0.3) * al)})`);
+        g.addColorStop(0.28, `rgba(${ACCENT}, ${Math.min(1, (0.22 + hub * 0.12 + mt * 0.2) * al)})`);
+        g.addColorStop(0.6, `rgba(${ACCENT}, ${Math.min(1, (0.09 + hub * 0.06 + mt * 0.1) * al)})`);
+        g.addColorStop(1, `rgba(${ACCENT}, 0)`);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(n.rx, n.ry, glowR, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalCompositeOperation = "source-over";
+      // Crisp solid cores on top of the halos.
+      for (const n of nodes) {
+        const al = nodeAlpha(n) * scrollAlpha;
+        if (al <= 0.003) continue;
+        const glow = Math.sin(n.pulse) * 0.5 + 0.5;
+        const scale = 1 + n.mouseT * (MAX_SCALE - 1);
+        ctx.beginPath();
+        ctx.arc(n.rx, n.ry, n.r * (1 + glow * 0.2) * scale, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${ACCENT}, ${Math.min(1, 0.85 * al + 0.15)})`;
+        ctx.fill();
+      }
+    };
+    const loop = (t) => {
+      if (!running) return;
+      const dt = last ? Math.min(40, t - last) : 16;
+      last = t;
+      draw(dt);
+      raf = requestAnimationFrame(loop);
+    };
+    const start = () => {
+      if (running || reduced) return;
+      running = true;
+      last = 0;
+      raf = requestAnimationFrame(loop);
+    };
+    const stop = () => {
+      running = false;
+      if (raf) cancelAnimationFrame(raf);
+      raf = null;
+    };
+
+    resize();
+    build();
+    draw(16);
+    window.addEventListener("resize", () => {
+      resize();
+      build();
+      if (!running) draw(16);
+    });
+
+    if (hasMouse) {
+      // Listen on the section (canvas's parent) so movement over the text/
+      // buttons on top still updates the cursor position; the handler only
+      // stores raw coordinates, all math happens in the RAF loop above.
+      const host = canvas.parentElement || canvas;
+      host.addEventListener("mousemove", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+        mouse.active = true;
+      });
+      host.addEventListener("mouseleave", () => {
+        mouse.active = false;
+      });
+    }
+
+    if (reduced) {
+      draw(16);
+    } else {
+      const io = new IntersectionObserver(
+        (entries) => entries.forEach((e) => (e.isIntersecting ? start() : stop())),
+        { threshold: 0 }
+      );
+      io.observe(canvas);
+    }
+
+    return {
+      setIntro: (v) => {
+        intro = v;
+        if (!running) draw(16);
+      },
+      setScrollAlpha: (v) => {
+        scrollAlpha = v;
+        if (!running) draw(16);
+      },
+    };
+  }
+
   // Homepage scroll storytelling (GSAP + ScrollTrigger). Only runs on pages that
   // load GSAP and contain the relevant sections, so other pages are unaffected.
   function initHomeMotion() {
@@ -514,148 +736,283 @@
     const ScrollTrigger = window.ScrollTrigger;
     if (!gsap) return;
 
-    // Reduced motion: keep everything visible and static, no pinning or scrubbing.
+    // Reduced motion: no pin/scrub. Draw a single static network frame, show the
+    // call UI in its first state and list all phase captions as plain text.
     if (prefersReducedMotion) {
-      qsa(".voice-step").forEach((s) => s.classList.add("is-active"));
+      const netCanvas = qs(".brandhero-net");
+      if (netCanvas) initNetworkCanvas(netCanvas, { reduced: true });
+      const cap = qs(".vhero .vhero-caption");
+      if (cap) cap.classList.add("show-all");
       return;
     }
     if (!ScrollTrigger) return;
     gsap.registerPlugin(ScrollTrigger);
 
-    // --- 1. Voicebot sticky stage: premium AI voice-processing visual ---
-    const stage = qs(".voice-stage");
+    // Lenis smooth scroll, synced to ScrollTrigger + GSAP's ticker so scrub
+    // animations stay locked to the scroll position. Homepage only.
+    const Lenis = window.Lenis;
+    if (Lenis && qs(".brandhero")) {
+      const lenis = new Lenis({ duration: 1.1, smoothWheel: true });
+      lenis.on("scroll", ScrollTrigger.update);
+      gsap.ticker.add((time) => lenis.raf(time * 1000));
+      gsap.ticker.lagSmoothing(0);
+    }
+
+    // --- 0. Brand hero: network background + load choreography ---
+    const brand = qs(".brandhero");
+    if (brand) {
+      const netCanvas = qs(".brandhero-net", brand);
+      const net = netCanvas ? initNetworkCanvas(netCanvas, { reduced: false }) : null;
+      const wordmark = qs(".bh-wordmark", brand);
+      const eyebrow = qs(".bh-eyebrow", brand);
+      const sub = qs(".bh-sub", brand);
+      const cta = qs(".bh-cta", brand);
+      const cue = qs(".bh-scroll", brand);
+
+      gsap.set([eyebrow, sub, cta].filter(Boolean), { opacity: 0, y: 20 });
+      gsap.set(wordmark, { opacity: 0, scale: 0.95 });
+      if (cue) gsap.set(cue, { opacity: 0 });
+
+      const intro = { v: 0 };
+      const tl = gsap.timeline();
+      tl.to(intro, { v: 1, duration: 1.5, ease: "power2.out", onUpdate: () => net && net.setIntro(intro.v) }, 0);
+      if (eyebrow) tl.to(eyebrow, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.7);
+      if (wordmark) tl.to(wordmark, { opacity: 1, scale: 1, duration: 0.6, ease: "power3.out" }, 0.8);
+      tl.to([sub, cta].filter(Boolean), { opacity: 1, y: 0, duration: 0.6, stagger: 0.12, ease: "power3.out" }, 1.0);
+      if (cue) tl.to(cue, { opacity: 1, duration: 0.6 }, 1.4);
+
+      // Scroll away: content lifts + fades, nodes dim so the section "stays behind".
+      gsap.to(qs(".brandhero-content", brand), {
+        opacity: 0,
+        y: -30,
+        ease: "none",
+        scrollTrigger: { trigger: brand, start: "top top", end: "bottom 45%", scrub: true },
+      });
+      if (net) {
+        ScrollTrigger.create({
+          trigger: brand,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+          onUpdate: (self) => net.setScrollAlpha(1 - self.progress * 0.6),
+        });
+      }
+    }
+
+    // --- 1. Websites: pinned code -> site transformation (3 phases) ---
+    const webstage = qs(".webstage");
+    if (webstage) {
+      const codeLines = qsa(".cln", webstage);
+      const code = qs(".webcode", webstage);
+      const site = qs(".websiteview", webstage);
+      const scan = qs(".webscan", webstage);
+      const cards = qsa(".bl-card", webstage);
+      const blocks = qsa(".webblock", webstage);
+      const mmWeb = gsap.matchMedia();
+
+      // Desktop: pin the grid and run one linear timeline across ~2.6 screens.
+      mmWeb.add("(min-width: 901px)", () => {
+        gsap.set(codeLines, { opacity: 0, y: -8 });
+        gsap.set(code, { opacity: 1 });
+        gsap.set(site, { clipPath: "inset(0 100% 0 0)" });
+        if (scan) gsap.set(scan, { opacity: 0, left: "0%" });
+        if (cards.length) gsap.set(cards, { opacity: 0, y: 10 });
+        gsap.set(blocks, { opacity: 0, y: 15 });
+        gsap.set(blocks[0], { opacity: 1, y: 0 });
+
+        const tl = gsap.timeline({
+          defaults: { ease: "none" },
+          scrollTrigger: {
+            trigger: webstage,
+            start: "top top",
+            end: "+=2600",
+            pin: ".webstage-pin",
+            anticipatePin: 1,
+            scrub: true,
+          },
+        });
+
+        // Phase 1 (0-30%): code lines type in from top to bottom.
+        tl.to(codeLines, { opacity: 1, y: 0, stagger: 0.05, duration: 3 }, 0);
+
+        // Phase 2 (30-70%): one continuous wipe reveals the mockup over the
+        // code, driven directly by scroll progress (no separate fades/eases).
+        // The scan line rides the clip-path boundary the whole way.
+        if (blocks[0]) tl.to(blocks[0], { opacity: 0, y: -15, duration: 0.6 }, 3);
+        if (blocks[1]) tl.to(blocks[1], { opacity: 1, y: 0, duration: 0.6 }, 3.3);
+        if (scan) tl.to(scan, { opacity: 1, duration: 0.2 }, 3);
+
+        const wipe = { p: 0 };
+        tl.to(
+          wipe,
+          {
+            p: 1,
+            duration: 4,
+            onUpdate: () => {
+              const pct = wipe.p * 100;
+              site.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+              if (scan) scan.style.left = pct + "%";
+            },
+          },
+          3
+        );
+
+        // The layered cards fade in with a short stagger once the wipe has
+        // swept past them, so the reveal itself feels stepped, not instant.
+        if (cards.length) tl.to(cards, { opacity: 1, y: 0, stagger: 0.05, duration: 0.5 }, 6.4);
+
+        // Code stays visible in the background until the wipe has fully
+        // covered it, then it (and the scan line) fade out in one beat.
+        tl.to([code, scan].filter(Boolean), { opacity: 0, duration: 0.3 }, 6.9);
+
+        // Phase 3 (70-100%): site fully up, final block + CTA, idle glow (CSS).
+        if (blocks[1]) tl.to(blocks[1], { opacity: 0, y: -15, duration: 0.6 }, 7);
+        if (blocks[2]) tl.to(blocks[2], { opacity: 1, y: 0, duration: 0.6 }, 7.3);
+        tl.to({}, { duration: 2.6 }, 7.3);
+
+        return () => {
+          if (tl.scrollTrigger) tl.scrollTrigger.kill();
+          tl.kill();
+          site.style.clipPath = "";
+          if (scan) scan.style.left = "";
+        };
+      });
+      // Mobile/reduced: CSS stacks the three text blocks and shows the site as-is.
+    }
+
+    // --- 2. Voicebot hero: premium call-UI sticky journey ---
+    const stage = qs(".vhero");
     if (stage) {
-      const inPaths = qsa(".vc-in", stage);
-      const outPath = qs(".vc-out", stage);
-      const glow = qs(".vc-glow", stage);
-      const coreRing = qs(".vc-ring-core", stage);
-      const coreDot = qs(".vc-core-dot", stage);
-      const orbitNodes = qsa(".vc-node", stage);
-      const dataPts = qsa(".vc-data circle", stage);
-      const cards = qsa(".vc-card", stage);
-      const steps = qsa(".voice-step", stage);
+      const states = qsa(".call-state", stage);
+      const phases = qsa(".v-phase", stage);
+      const dots = qsa(".callsteps i", stage);
+      const timer = qs(".cs-timer", stage);
+      const screen = qs(".phone-screen", stage);
+      const slideInner = qs("[data-slide-inner]", stage);
 
-      // Where each data point starts along the incoming wave (SVG coords, core at 250,240).
-      const dataStart = [
-        { x: 32, y: 240 }, { x: 78, y: 212 }, { x: 120, y: 268 }, { x: 162, y: 226 },
-      ];
-
-      const prepDraw = (path) => {
-        if (!path || typeof path.getTotalLength !== "function") return;
-        const len = path.getTotalLength();
-        gsap.set(path, { strokeDasharray: len, strokeDashoffset: len });
+      const fmt = (s) => "0" + Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+      const setStep = (i) => {
+        states.forEach((s, idx) => s.classList.toggle("is-active", idx === i));
+        phases.forEach((p, idx) => p.classList.toggle("is-active", idx === i));
+        dots.forEach((d, idx) => d.classList.toggle("is-active", idx === i));
+        if (screen) screen.classList.toggle("is-ringing", i === 0);
       };
 
       const mm = gsap.matchMedia();
 
-      // Desktop: pinned, scrubbed 5-phase storytelling.
+      // Desktop: pin the hero and advance the call states phase by phase on scroll.
       mm.add("(min-width: 901px)", () => {
-        inPaths.forEach(prepDraw);
-        prepDraw(outPath);
-        // Resting state still reads as a present AI core (calm, not empty).
-        gsap.set(glow, { opacity: 0.26, scale: 0.94 });
-        gsap.set(coreRing, { scale: 0.95, opacity: 0.6 });
-        gsap.set(coreDot, { scale: 0.92, opacity: 0.9 });
-        gsap.set(orbitNodes, { opacity: 0.45 });
-        dataPts.forEach((d, i) => gsap.set(d, { attr: { cx: dataStart[i].x, cy: dataStart[i].y }, opacity: 0 }));
-        gsap.set(cards, { opacity: 0, y: 8 });
-
-        const tl = gsap.timeline({
-          defaults: { ease: "power1.inOut" },
-          scrollTrigger: {
-            trigger: stage,
-            start: "top top",
-            end: "+=3000",
-            scrub: 1,
-            pin: ".voice-sticky",
-            anticipatePin: 1,
-          },
-        });
-
-        // Phase 1 - inkomende voice wave tekent zich.
-        tl.to(inPaths, { strokeDashoffset: 0, duration: 1, stagger: 0.2 }, 0)
-          .to(cards[0], { opacity: 1, y: 0, duration: 0.5 }, 0.55);
-        // Phase 2 - datapunten bewegen rustig naar de core.
-        tl.to(dataPts, { opacity: 1, duration: 0.3, stagger: 0.12 }, 1.15)
-          .to(dataPts, { attr: { cx: 250, cy: 240 }, duration: 1, stagger: 0.12, ease: "power2.in" }, 1.15)
-          .to(dataPts, { opacity: 0, duration: 0.25, stagger: 0.12 }, 2.0)
-          .to(orbitNodes, { opacity: 1, duration: 0.5, stagger: 0.06 }, 1.8)
-          .to(cards[1], { opacity: 1, y: 0, duration: 0.5 }, 1.7);
-        // Phase 3 - core licht subtiel op.
-        tl.to(glow, { opacity: 0.5, scale: 1.04, duration: 0.7 }, 2.3)
-          .to(coreRing, { scale: 1.06, opacity: 0.8, duration: 0.7 }, 2.3)
-          .to(coreDot, { scale: 1.1, opacity: 1, duration: 0.7 }, 2.3);
-        // Phase 4 - antwoord-wave komt terug uit de core.
-        tl.to(outPath, { strokeDashoffset: 0, duration: 1 }, 2.9)
-          .to(cards[2], { opacity: 1, y: 0, duration: 0.5 }, 3.2);
-        // Phase 5 - alles komt tot rust, laatste actiecard verschijnt.
-        tl.to(glow, { opacity: 0.38, scale: 1, duration: 0.6 }, 3.7)
-          .to(coreRing, { scale: 1, duration: 0.6 }, 3.7)
-          .to(cards[3], { opacity: 1, y: 0, duration: 0.5 }, 3.7);
-
-        // Highlight the matching text step per scroll progress.
-        const stepTrigger = ScrollTrigger.create({
+        const segment = 1 / states.length;
+        const st = ScrollTrigger.create({
           trigger: stage,
           start: "top top",
-          end: "+=3000",
+          end: "+=3600",
+          pin: ".vhero-pin",
+          anticipatePin: 1,
           onUpdate: (self) => {
-            const i = Math.min(steps.length - 1, Math.floor(self.progress * steps.length));
-            steps.forEach((s, idx) => s.classList.toggle("is-active", idx === i));
+            const i = Math.min(states.length - 1, Math.floor(self.progress * states.length));
+            setStep(i);
+            if (timer) timer.textContent = fmt(Math.round(self.progress * 28));
+            // Scrollen is de "swipe": binnen fase 1 schuift de knop mee met de scrollprogressie.
+            if (slideInner) {
+              const p = Math.max(0, Math.min(1, self.progress / segment));
+              slideInner.style.setProperty("--p", p);
+            }
           },
         });
-
         return () => {
-          stepTrigger.kill();
-          steps.forEach((s) => s.classList.remove("is-active"));
+          st.kill();
+          setStep(0);
+          if (slideInner) slideInner.style.setProperty("--p", 0);
         };
       });
 
-      // Mobile/tablet: no pin. Show a complete, calm static visual; highlight all steps.
-      mm.add("(max-width: 900px)", () => {
-        gsap.set(glow, { opacity: 0.4 });
-        gsap.set(coreRing, { opacity: 0.65 });
-        gsap.set(coreDot, { opacity: 1 });
-        gsap.set(orbitNodes, { opacity: 1 });
-        gsap.set(dataPts, { opacity: 0 });
-        gsap.set(cards, { opacity: 1, y: 0 });
-        steps.forEach((s) => s.classList.add("is-active"));
-        return () => steps.forEach((s) => s.classList.remove("is-active"));
-      });
+      // Mobile/tablet: no pin. The phone shows the incoming-call state and the
+      // phase captions stack as a readable list (handled in CSS).
     }
 
-    // --- 2. Websites self-build ---
-    const build = qs(".build-browser");
-    if (build) {
-      const layers = qsa("[data-build]", build);
-      gsap.set(layers, { opacity: 0, y: 16 });
-      gsap.timeline({
-        scrollTrigger: { trigger: ".websites-stage", start: "top 72%", end: "center 55%", scrub: 1 },
-      }).to(layers, { opacity: 1, y: 0, stagger: 0.5, duration: 1 });
-    }
+    // --- 3. AI Automations: pinned workflow journey ---
+    // Left: six process steps with active/completed states. Right: one
+    // continuously growing automation interface. Finished panels collapse
+    // into compact "done" rows so the data visibly carries over per step.
+    const auto = qs("[data-autoflow]");
+    if (auto) {
+      const afSteps = qsa("[data-af-step]", auto);
+      const afPanels = qsa("[data-af-panel]", auto);
+      const afIdle = qs("[data-af-idle]", auto);
+      const afStatus = qs("[data-af-status]", auto);
+      const afRail = qs("[data-af-rail]", auto);
+      const IDLE_STATUS = "Wachten op nieuwe aanvraag…";
+      const STATUSES = [
+        "Nieuwe lead ontvangen",
+        "AI analyseert de aanvraag…",
+        "CRM wordt bijgewerkt…",
+        "Follow-up wordt verstuurd…",
+        "Afspraak wordt ingepland…",
+        "Workflow voltooid ✓",
+      ];
 
-    // --- 3. Automations golden line ---
-    const flow = qs(".flow");
-    if (flow) {
-      const draw = qs(".flow-line__draw", flow);
-      if (draw && typeof draw.getTotalLength === "function") {
-        const len = draw.getTotalLength();
-        gsap.set(draw, { strokeDasharray: len, strokeDashoffset: len });
-        gsap.to(draw, {
-          strokeDashoffset: 0,
-          ease: "none",
-          scrollTrigger: { trigger: flow, start: "top 75%", end: "bottom 80%", scrub: 1 },
+      const mmAuto = gsap.matchMedia();
+
+      mmAuto.add("(min-width: 901px)", () => {
+        auto.classList.add("is-live");
+        let lastKey = "";
+
+        const apply = (progress) => {
+          const n = afSteps.length;
+          const raw = Math.min(n - 0.001, progress * n);
+          const i = Math.floor(raw);
+          // First third of phase 1 stays idle, then the lead "arrives".
+          const leadIn = i === 0 && raw - i < 0.33;
+          if (afRail) afRail.style.transform = "scaleX(" + progress + ")";
+          const key = i + (leadIn ? "a" : "b");
+          if (key === lastKey) return;
+          lastKey = key;
+          afSteps.forEach((s, idx) => {
+            s.classList.toggle("is-active", idx === i);
+            s.classList.toggle("is-done", idx < i);
+          });
+          afPanels.forEach((p, idx) => {
+            p.classList.toggle("is-on", idx === i && !leadIn);
+            p.classList.toggle("is-done", idx < i);
+          });
+          if (afIdle) afIdle.classList.toggle("is-off", !leadIn);
+          if (afStatus) afStatus.textContent = leadIn ? IDLE_STATUS : STATUSES[i];
+        };
+
+        const st = ScrollTrigger.create({
+          trigger: auto,
+          start: "top top",
+          end: "+=3200",
+          pin: ".autoflow-pin",
+          anticipatePin: 1,
+          onUpdate: (self) => apply(self.progress),
         });
-      }
-      const cards = qsa(".flow-card", flow);
-      gsap.set(cards, { opacity: 0, y: 22 });
-      ScrollTrigger.batch(cards, {
-        start: "top 85%",
-        onEnter: (b) => gsap.to(b, { opacity: 1, y: 0, stagger: 0.12, duration: 0.5, overwrite: true }),
+        apply(0);
+
+        return () => {
+          st.kill();
+          auto.classList.remove("is-live");
+          afSteps.forEach((s) => s.classList.remove("is-active", "is-done"));
+          afPanels.forEach((p) => p.classList.remove("is-on", "is-done"));
+          if (afIdle) afIdle.classList.remove("is-off");
+          if (afStatus) afStatus.textContent = "Workflow actief";
+          if (afRail) afRail.style.transform = "";
+        };
+      });
+
+      // Mobile: stacked step + visual pairs with a simple reveal per panel.
+      mmAuto.add("(max-width: 900px)", () => {
+        gsap.set(afPanels, { opacity: 0, y: 18 });
+        ScrollTrigger.batch(afPanels, {
+          start: "top 88%",
+          onEnter: (b) => gsap.to(b, { opacity: 1, y: 0, stagger: 0.08, duration: 0.5, overwrite: true }),
+        });
       });
     }
 
     // --- Generic fade-ins for remaining sections ---
-    const fades = qsa("[data-fade]").filter((el) => !el.closest(".flow"));
+    const fades = qsa("[data-fade]").filter((el) => !el.closest(".autoflow"));
     if (fades.length) {
       gsap.set(fades, { opacity: 0, y: 20 });
       ScrollTrigger.batch(fades, {

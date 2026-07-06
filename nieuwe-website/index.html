@@ -321,108 +321,201 @@ h1 {
       background: linear-gradient(var(--accent), transparent);
     }
 
-    /* ===== 1. Voicebot hero / sticky stage ===== */
-    .voice-stage {
-      position: relative;
-      background: radial-gradient(110% 70% at 84% 14%, rgba(251, 191, 36, 0.12), transparent 60%);
+    /* ===== 0. Brand hero: network background + wordmark ===== */
+    .brandhero { position: relative; overflow: hidden; isolation: isolate; }
+    .brandhero-net { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+    .brandhero-inner {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      width: 100%; max-width: var(--max-width);
+      margin: 0 auto; padding: clamp(90px, 12vh, 130px) var(--space-5) clamp(70px, 10vh, 100px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
     }
-    .voice-sticky {
+    .brandhero-content { max-width: 840px; }
+    .bh-eyebrow { margin-bottom: 22px; }
+    .bh-wordmark {
+      font-size: clamp(2.5rem, 8.5vw, 6.5rem);
+      white-space: nowrap;
+      line-height: 0.96; margin: 0 0 var(--space-5);
+      letter-spacing: -0.035em; font-weight: 700;
+      color: var(--accent);
+      text-shadow:
+        0 0 12px rgba(251, 191, 36, 0.35),
+        0 0 30px rgba(251, 191, 36, 0.22),
+        0 0 60px rgba(251, 191, 36, 0.12);
+    }
+    .bh-sub { font-size: clamp(16px, 1.7vw, 21px); color: var(--text-soft); max-width: 640px; margin: 0 auto var(--space-6); }
+    .bh-cta { justify-content: center; }
+    .bh-scroll {
+      position: absolute; bottom: clamp(20px, 4vh, 40px); left: 50%;
+      font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(245, 239, 215, 0.5);
+      display: inline-flex; flex-direction: column; align-items: center; gap: 9px;
+      animation: bh-bounce 1.9s ease-in-out infinite;
+    }
+    .bh-scroll::after { content: ""; width: 1px; height: 34px; background: linear-gradient(var(--accent), transparent); }
+    @keyframes bh-bounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(7px); } }
+    @media (max-width: 600px) { .bh-scroll { display: none; } }
+
+    /* ===== 1. Voicebot hero: premium call-UI sticky journey ===== */
+    .vhero {
+      position: relative;
+      background:
+        radial-gradient(48% 42% at 50% 46%, rgba(251, 191, 36, 0.10), transparent 70%),
+        radial-gradient(120% 70% at 50% 120%, rgba(245, 158, 11, 0.05), transparent 60%);
+    }
+    .vhero-pin {
       min-height: 100vh;
       display: flex;
-      align-items: center;
-      padding: clamp(96px, 13vh, 150px) 0 clamp(40px, 8vh, 80px);
+      flex-direction: column;
+      padding: clamp(82px, 10vh, 112px) 0 clamp(18px, 3.2vh, 36px);
     }
-    .voice-layout {
-      display: grid;
-      grid-template-columns: 1.02fr 0.98fr;
-      gap: clamp(28px, 4vw, 72px);
-      align-items: center;
-      width: 100%;
-    }
-    .voice-copy h1 { font-size: clamp(34px, 4.6vw, 62px); }
-    .voice-copy .lede { max-width: 48ch; }
-    .voice-steps {
-      list-style: none;
-      margin: var(--space-6) 0;
-      padding: 0;
-      display: grid;
-      gap: var(--space-2);
-    }
-    .voice-step {
+    .vhero-head { text-align: center; max-width: 780px; margin: 0 auto; padding: 0 var(--space-5); }
+    .vhero-head .eyebrow { margin-bottom: 12px; }
+    .vhero-head h2 { font-size: clamp(28px, 4vw, 52px); margin: 0; }
+    .vhero-mid {
+      flex: 1;
       display: flex;
-      gap: var(--space-3);
-      align-items: flex-start;
-      padding: var(--space-3) var(--space-4);
-      border: 1px solid var(--border);
-      border-left: 2px solid transparent;
-      border-radius: var(--radius-md);
-      background: rgba(255, 255, 255, 0.02);
-      opacity: 0.55;
-      transition: opacity 0.35s var(--ease-enter), background 0.35s ease, border-color 0.35s ease, transform 0.35s var(--ease-enter);
-    }
-    .voice-step.is-active {
-      opacity: 1;
-      background: rgba(251, 191, 36, 0.07);
-      border-left-color: var(--accent);
-      transform: translateX(4px);
-    }
-    .voice-step__no { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; min-width: 20px; }
-    .voice-step b { color: #f5f1e1; font-family: var(--font-display); font-size: 16px; }
-    .voice-step .t { display: block; font-size: 13.5px; color: var(--text-soft); margin-top: 2px; }
-
-    /* Core visual: premium AI voice-processing */
-    .voice-visual {
-      position: relative;
-      width: 100%;
-      max-width: 480px;
-      margin: 0 auto;
-      aspect-ratio: 1 / 1;
-    }
-    .vc-svg { width: 100%; height: 100%; overflow: visible; display: block; }
-    .vc-svg path { fill: none; stroke-linecap: round; }
-    .vc-glow { transform-box: fill-box; transform-origin: center; }
-    .vc-ring-core, .vc-core-dot { transform-box: fill-box; transform-origin: center; will-change: transform, opacity; }
-    .vc-data circle { opacity: 0; }
-
-    .vc-card {
-      position: absolute;
-      display: inline-flex;
+      flex-direction: column;
       align-items: center;
-      gap: 8px;
-      padding: 8px 13px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      color: #f5f1e1;
-      background: rgba(18, 15, 10, 0.72);
-      -webkit-backdrop-filter: blur(6px);
-      backdrop-filter: blur(6px);
-      border: 1px solid rgba(251, 191, 36, 0.30);
-      border-radius: 10px;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
-      white-space: nowrap;
+      justify-content: center;
+      gap: clamp(12px, 2.2vh, 24px);
+      width: 100%;
     }
-    .vc-card::before {
-      content: "";
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 8px rgba(251, 191, 36, 0.8);
-      flex: 0 0 auto;
+
+    /* Phone shell */
+    .phone-wrap { position: relative; display: grid; place-items: center; }
+    .phone-glow {
+      position: absolute; width: 128%; height: 78%; border-radius: 50%;
+      background: radial-gradient(circle, rgba(251, 191, 36, 0.16), transparent 65%);
+      filter: blur(22px); pointer-events: none;
     }
-    .vc-card--tl { top: 5%; left: -2%; }
-    .vc-card--bl { bottom: 8%; left: 1%; }
-    .vc-card--tr { top: 11%; right: -2%; }
-    .vc-card--br { bottom: 4%; right: 0; }
+    .phone {
+      position: relative;
+      width: clamp(256px, 29vw, 308px);
+      aspect-ratio: 300 / 620;
+      border-radius: 46px;
+      padding: 12px;
+      background: linear-gradient(155deg, #2b2314 0%, #1c1710 32%, #0e0b06 68%, #241d11 100%);
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      box-shadow: 0 42px 92px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+    }
+    /* Zij-knoppen: mute-schakelaar + volume links, power rechts (net als een echte iPhone) */
+    .phone-btn { position: absolute; border-radius: 3px 0 0 3px; background: linear-gradient(180deg, #322912, #150f08); box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.12); }
+    .phone-btn-mute { left: -3px; top: 17%; width: 3px; height: 22px; }
+    .phone-btn-vol-up { left: -3px; top: 25%; width: 3px; height: 38px; }
+    .phone-btn-vol-down { left: -3px; top: 36%; width: 3px; height: 38px; }
+    .phone-btn-power { right: -3px; top: 28%; width: 3px; height: 52px; border-radius: 0 3px 3px 0; }
+    .phone-island {
+      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+      width: 28%; min-width: 78px; height: 20px; background: #050403; border-radius: 999px; z-index: 3;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+    .phone-island::after {
+      content: ""; position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+      width: 7px; height: 7px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #2c3c58, #090d12 70%);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+    .phone-screen { position: relative; width: 100%; height: 100%; border-radius: 34px; background: radial-gradient(120% 80% at 50% 0%, #1a1610, #0c0a06 70%); overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.6s ease; }
+    /* Inkomende oproep: kleurrijke, geblurde achtergrond zoals het iOS-belscherm (eigen gradient, geen Apple-beeldmateriaal) */
+    .phone-screen.is-ringing {
+      background:
+        radial-gradient(115% 85% at 18% 8%, rgba(147, 197, 253, 0.5), transparent 55%),
+        radial-gradient(100% 85% at 88% 18%, rgba(94, 234, 212, 0.38), transparent 60%),
+        radial-gradient(120% 100% at 50% 105%, rgba(13, 79, 79, 0.7), transparent 65%),
+        linear-gradient(160deg, #2a5a72, #123a44 55%, #0b262b 100%);
+    }
+    .phone-bar { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 14px 22px 0; font-size: 12px; color: rgba(245, 239, 215, 0.75); z-index: 2; }
+    .phone-bar b { font-weight: 600; letter-spacing: 0.01em; }
+    .phone-bar-icons { display: flex; align-items: center; gap: 5px; color: rgba(245, 239, 215, 0.75); }
+    .phone-bar-icons svg { display: block; }
+
+    /* Call states (one visible at a time) */
+    .call-state { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 13px; padding: 54px 18px 24px; text-align: center; opacity: 0; transform: translateY(14px) scale(0.985); transition: opacity 0.5s var(--ease-enter), transform 0.5s var(--ease-enter); pointer-events: none; }
+    .call-state.is-active { opacity: 1; transform: none; }
+    .cs-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+    .cs-name { font-family: var(--font-display); font-size: 20px; color: #f6f0dc; }
+    .cs-sub { font-size: 12px; color: rgba(245, 239, 215, 0.55); }
+
+    .cs-avatar { position: relative; width: 88px; height: 88px; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 50% 35%, rgba(251, 191, 36, 0.3), rgba(245, 158, 11, 0.1)); border: 1px solid rgba(251, 191, 36, 0.4); color: #f6f0dc; font-size: 30px; font-family: var(--font-display); margin: 2px 0 4px; }
+    .cs-avatar i { position: absolute; inset: -10px; border-radius: 50%; border: 1px solid rgba(251, 191, 36, 0.45); }
+    .call-state.is-active .cs-avatar i { animation: cs-ring 2s ease-out infinite; }
+    @keyframes cs-ring { 0% { transform: scale(0.9); opacity: 0.8; } 100% { transform: scale(1.4); opacity: 0; } }
+
+    /* Inkomende-oproep layout: kop bovenaan, snelacties in het midden, swipe-balk onderaan */
+    .call-state[data-state="0"] { justify-content: flex-start; padding-top: 70px; }
+    .cs-quickactions { display: flex; gap: 44px; margin-top: auto; margin-bottom: 96px; }
+    .cs-qa { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+    .cs-qa-ico { width: 46px; height: 46px; border-radius: 50%; background: rgba(255, 255, 255, 0.16); display: grid; place-items: center; color: #eaf6f3; }
+    .cs-qa-ico svg { width: 19px; height: 19px; display: block; }
+    .cs-qa small { font-size: 11px; color: rgba(255, 255, 255, 0.75); }
+
+    /* Swipe-om-op-te-nemen: de knop volgt de scrollprogressie (--p, 0-1) van de sectie */
+    .cs-slide { position: absolute; left: 18px; right: 18px; bottom: 22px; }
+    .cs-slide-track { position: relative; height: 46px; border-radius: 999px; background: rgba(255, 255, 255, 0.14); backdrop-filter: blur(6px); padding: 3px; box-sizing: border-box; }
+    .cs-slide-inner { position: relative; height: 100%; --p: 0; }
+    .cs-slide-fill { position: absolute; inset: 0; width: calc(var(--p) * (100% - 40px) + 40px); border-radius: 999px; background: linear-gradient(90deg, rgba(52, 199, 89, 0.45), rgba(52, 199, 89, 0.9)); }
+    .cs-slide-hint { position: absolute; inset: 0; display: grid; place-items: center; font-size: 12.5px; color: rgba(255, 255, 255, 0.9); opacity: calc(1 - var(--p) * 1.6); }
+    .cs-slide-knob { position: absolute; top: 0; left: calc(var(--p) * (100% - 40px)); width: 40px; height: 40px; border-radius: 50%; background: #fff; display: grid; place-items: center; color: #34c759; font-size: 16px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35); }
+
+    /* Verbonden-oproep: knoppenrij onderaan, zoals het iOS in-gesprek-scherm */
+    .cs-callgrid { position: absolute; left: 0; right: 0; bottom: 30px; display: grid; grid-template-columns: repeat(3, 1fr); row-gap: 16px; padding: 0 26px; }
+    .cs-cg-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .cs-cg-ico { width: 44px; height: 44px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); display: grid; place-items: center; color: #eef0ee; }
+    .cs-cg-ico svg { width: 17px; height: 17px; display: block; }
+    .cs-cg-btn.end .cs-cg-ico { background: #ff453a; color: #fff; }
+    .cs-cg-btn small { font-size: 10.5px; color: rgba(255, 255, 255, 0.6); }
+
+    .cs-statusline { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #f6f0dc; }
+    .cs-dot { width: 8px; height: 8px; border-radius: 50%; background: #46d17f; }
+    .call-state.is-active .cs-dot { animation: cs-blink 1.4s ease-in-out infinite; }
+    @keyframes cs-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .cs-timer { font-family: var(--font-display); font-size: 30px; color: #f6f0dc; font-variant-numeric: tabular-nums; }
+    .cs-bars { display: flex; align-items: flex-end; gap: 4px; height: 32px; }
+    .cs-bars span { width: 4px; height: 30%; background: linear-gradient(var(--accent), var(--accent-2)); border-radius: 3px; }
+    .call-state.is-active .cs-bars span { animation: cs-eq 0.9s ease-in-out infinite; }
+    .cs-bars span:nth-child(2) { animation-delay: 0.12s; }
+    .cs-bars span:nth-child(3) { animation-delay: 0.24s; }
+    .cs-bars span:nth-child(4) { animation-delay: 0.12s; }
+    .cs-bars span:nth-child(5) { animation-delay: 0.30s; }
+    @keyframes cs-eq { 0%, 100% { height: 24%; } 50% { height: 92%; } }
+
+    .cs-chat { display: flex; flex-direction: column; gap: 9px; width: 100%; }
+    .cs-bubble { max-width: 86%; padding: 9px 12px; border-radius: 14px; font-size: 12px; line-height: 1.35; text-align: left; }
+    .cs-bubble.cs-in { align-self: flex-start; background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border); border-bottom-left-radius: 4px; color: var(--text); }
+    .cs-bubble.cs-ai { align-self: flex-end; background: rgba(251, 191, 36, 0.14); border: 1px solid rgba(251, 191, 36, 0.35); border-bottom-right-radius: 4px; color: #f6f0dc; }
+
+    .cs-panel { width: 100%; text-align: left; display: grid; gap: 11px; }
+    .cs-check { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-display); color: #f6f0dc; font-size: 16px; }
+    .cs-check::before { content: "\2713"; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #0d0b06; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+    .cs-meta { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+    .cs-meta li { font-size: 12px; color: var(--text-soft); padding: 8px 11px; border: 1px solid var(--border); border-radius: 10px; background: rgba(255, 255, 255, 0.02); }
+    .cs-meta li b { color: var(--accent); font-weight: 600; }
+
+    .cs-outputs { width: 100%; display: grid; gap: 8px; }
+    .cs-card { display: flex; align-items: center; gap: 9px; font-size: 12px; font-weight: 600; color: #f6f0dc; padding: 10px 12px; border-radius: 12px; background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.28); text-align: left; }
+    .cs-card::before { content: "\2713"; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: #0d0b06; display: grid; place-items: center; font-size: 10px; font-weight: 700; flex: 0 0 auto; }
+
+    .callsteps { display: flex; gap: 8px; justify-content: center; }
+    .callsteps i { width: 7px; height: 7px; border-radius: 50%; background: rgba(251, 191, 36, 0.25); transition: all 0.3s var(--ease-enter); }
+    .callsteps i.is-active { background: var(--accent); width: 22px; border-radius: 99px; }
+
+    /* Phase caption + cta */
+    .vhero-caption { position: relative; height: clamp(46px, 7vh, 66px); width: 100%; max-width: 600px; padding: 0 var(--space-5); }
+    .v-phase { position: absolute; inset: 0; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-align: center; opacity: 0; transform: translateY(8px); transition: opacity 0.45s var(--ease-enter), transform 0.45s var(--ease-enter); pointer-events: none; }
+    .v-phase.is-active { opacity: 1; transform: translateY(0); }
+    .v-phase b { font-family: var(--font-display); font-size: clamp(16px, 1.8vw, 21px); color: #f6f0dc; }
+    .v-phase span { font-size: clamp(12.5px, 1.2vw, 14px); color: var(--text-soft); }
+    .vhero-caption.show-all { position: static; height: auto; display: grid; gap: 8px; margin-top: 8px; }
+    .vhero-caption.show-all .v-phase { position: static; inset: auto; opacity: 1; transform: none; }
+
+    .vhero-cta { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); }
+    .vhero-cta .cta-actions { justify-content: center; }
 
     @media (max-width: 900px) {
-      .voice-sticky { min-height: auto; padding: 104px 0 56px; }
-      .voice-layout { grid-template-columns: 1fr; }
-      .voice-visual { max-width: 340px; margin-top: var(--space-6); }
-      .vc-card { font-size: 11px; padding: 6px 10px; }
-      .vc-card--tl { left: -5%; }
-      .vc-card--tr { right: -5%; }
+      .vhero-pin { min-height: auto; padding: 96px 0 44px; }
+      .vhero-caption { position: static; height: auto; display: grid; gap: 8px; margin-top: 6px; }
+      .v-phase { position: static; inset: auto; opacity: 1; transform: none; }
     }
 
     /* ===== 2. Websites self-build ===== */
@@ -461,33 +554,177 @@ h1 {
     .bl-card { border-radius: 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border); }
     @media (max-width: 900px) { .build-layout { grid-template-columns: 1fr; } }
 
-    /* ===== 3. AI Automations golden line ===== */
-    .flow { position: relative; margin-top: var(--space-7); }
-    .flow-line { position: absolute; left: 26px; top: 6px; bottom: 6px; width: 2px; height: auto; }
-    .flow-line line { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
-    .flow-line__bg { stroke: rgba(251, 191, 36, 0.18); }
-    .flow-line__draw { stroke: var(--accent); filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.55)); }
-    .flow-list { list-style: none; display: grid; gap: clamp(16px, 2.4vw, 26px); padding-left: 64px; margin: 0; }
-    .flow-card { position: relative; }
-    .flow-card::before {
-      content: "";
-      position: absolute;
-      left: -45px;
-      top: 22px;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: var(--bg);
-      border: 2px solid var(--accent);
-      box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.12);
+    /* ===== 2b. Websites: code -> site pinned transformatie ===== */
+    .webstage { padding: 0; }
+    .webstage-pin { min-height: 100vh; display: flex; align-items: center; }
+    .webstage-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(28px, 4vw, 68px); align-items: center; width: 100%; }
+
+    .webbrowser { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--card); box-shadow: var(--shadow); overflow: hidden; }
+    .webbar { display: flex; align-items: center; gap: 7px; padding: 11px 14px; border-bottom: 1px solid var(--border); background: rgba(255, 255, 255, 0.02); }
+    .webbar i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255, 255, 255, 0.16); display: block; }
+    .weburl { margin-left: 10px; font-size: 12px; color: rgba(245, 239, 215, 0.5); }
+    .webcanvas { position: relative; aspect-ratio: 16 / 12; overflow: hidden; }
+
+    /* Code layer */
+    .webcode { position: absolute; inset: 0; padding: 18px 20px; display: flex; flex-direction: column; gap: 9px; font-family: "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace; }
+    .cln { display: flex; align-items: center; gap: 7px; height: 9px; }
+    .cln.i1 { padding-left: 22px; }
+    .cln.i2 { padding-left: 44px; }
+    .cln b { display: block; height: 9px; border-radius: 3px; }
+    .t-key { width: 42px; background: rgba(251, 191, 36, 0.85); }
+    .t-tag { width: 66px; background: rgba(245, 239, 215, 0.55); }
+    .t-str { width: 90px; background: rgba(245, 158, 11, 0.5); }
+    .cln .t-tag:nth-child(2) { width: 48px; }
+    .cln .t-str:last-child { width: 54px; }
+
+    /* Rendered site, revealed by wipe mask (clip-path animated in JS) */
+    .websiteview { position: absolute; inset: 0; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: radial-gradient(120% 90% at 50% 0%, #17130b, #0d0b06 75%); }
+    .websiteview .bl-hero { flex: 1; }
+    .websiteview .bl-img {
+      position: relative;
+      background:
+        radial-gradient(120% 130% at 25% 15%, rgba(251, 191, 36, 0.3), transparent 55%),
+        radial-gradient(90% 100% at 85% 90%, rgba(245, 158, 11, 0.22), transparent 60%),
+        linear-gradient(150deg, rgba(251, 191, 36, 0.14), rgba(22, 19, 13, 0.4));
+      overflow: hidden;
+      animation: web-glow 3.2s ease-in-out infinite;
     }
-    .flow-card h3 { font-size: 18px; margin-bottom: 4px; }
-    .flow-card p { margin: 0; font-size: 14.5px; }
-    .flow-card .step-no { color: var(--accent); font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
-    @media (max-width: 600px) {
-      .flow-line { left: 18px; }
-      .flow-list { padding-left: 48px; }
-      .flow-card::before { left: -37px; }
+    @keyframes web-glow { 0%, 100% { box-shadow: 0 0 0 rgba(251, 191, 36, 0); } 50% { box-shadow: 0 0 26px rgba(251, 191, 36, 0.22); } }
+
+    /* Wipe scan line: glowing edge that tracks the clip-path boundary */
+    .webscan {
+      position: absolute; top: 0; bottom: 0; width: 3px;
+      background: var(--accent);
+      box-shadow:
+        0 0 8px 2px rgba(251, 191, 36, 0.75),
+        0 0 20px 6px rgba(251, 191, 36, 0.4),
+        0 0 38px 12px rgba(251, 191, 36, 0.18);
+      transform: translateX(-50%);
+      opacity: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Text blocks (cross-fade on desktop, stacked on mobile) */
+    .webtext { position: relative; }
+    .webtext > .eyebrow { margin-bottom: 18px; }
+    .webblocks { position: relative; min-height: 240px; }
+    .webblock { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; }
+    .webblock h2 { font-size: clamp(26px, 3.2vw, 42px); }
+    .webblock .cta-actions { margin-top: var(--space-4); }
+
+    @media (max-width: 900px) {
+      .webstage { padding: clamp(56px, 9vw, 120px) 0; }
+      .webstage-pin { min-height: 0; display: block; }
+      .webstage-grid { grid-template-columns: 1fr; }
+      .webcode { display: none; }
+      .webblocks { position: static; min-height: 0; display: grid; gap: var(--space-6); }
+      .webblock { position: static; inset: auto; }
+    }
+
+    /* ===== 3. AI Automations: pinned workflow journey ===== */
+    .autoflow-pin { display: flex; align-items: center; min-height: 100vh; padding: 84px 0 32px; box-sizing: border-box; }
+    .autoflow-pin > .shell { width: 100%; }
+    .af-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(28px, 4.5vw, 60px); align-items: center; }
+
+    /* Links: rustige process-navigatie (geen cards) */
+    .af-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+    .af-step { display: flex; gap: 14px; padding: 11px 14px; border-radius: var(--radius-sm); border-left: 2px solid transparent; transition: background 0.35s ease, border-color 0.35s ease; }
+    .af-num { position: relative; flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-display); font-size: 12.5px; font-weight: 600; color: rgba(245, 239, 215, 0.45); border: 1px solid var(--border); transition: color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease; }
+    .af-check { position: absolute; inset: -1px; display: grid; place-items: center; border-radius: 50%; background: #221c10; border: 1px solid rgba(251, 191, 36, 0.5); color: var(--accent); font-size: 12px; opacity: 0; transform: scale(0.6); transition: opacity 0.3s var(--ease-enter), transform 0.3s var(--ease-enter); }
+    .af-step h3 { margin: 6px 0 0; font-size: 16px; color: rgba(245, 241, 225, 0.55); transition: color 0.35s ease; }
+    .af-step p { margin: 5px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--text-soft); }
+    .af-step.is-active { background: rgba(251, 191, 36, 0.05); border-left-color: var(--accent); }
+    .af-step.is-active .af-num { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 16px rgba(251, 191, 36, 0.22); }
+    .af-step.is-active h3 { color: #f5f1e1; }
+    .af-step.is-done h3 { color: rgba(245, 241, 225, 0.72); }
+    .af-step.is-done .af-check { opacity: 1; transform: none; }
+    /* Live journey: beschrijving alleen zichtbaar bij de actieve stap */
+    .autoflow.is-live .af-step p { max-height: 0; opacity: 0; overflow: hidden; margin-top: 0; transition: max-height 0.45s var(--ease-enter), opacity 0.35s ease, margin-top 0.45s var(--ease-enter); }
+    .autoflow.is-live .af-step.is-active p { max-height: 84px; opacity: 1; margin-top: 5px; }
+
+    /* Rechts: Smart-Scale automation-interface (gepind tijdens de journey) */
+    .af-screen { background: linear-gradient(170deg, #17130c, #100d08 70%); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow), 0 0 70px rgba(251, 191, 36, 0.05); overflow: hidden; }
+    .af-head { display: flex; align-items: center; gap: 10px; padding: 13px 18px; border-bottom: 1px solid var(--border); }
+    .af-dot { width: 8px; height: 8px; border-radius: 50%; background: #46d17f; box-shadow: 0 0 8px rgba(70, 209, 127, 0.7); animation: af-pulse 2s ease-in-out infinite; }
+    @keyframes af-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .af-brand { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+    .af-status { margin-left: auto; font-size: 12px; color: rgba(245, 239, 215, 0.55); text-align: right; }
+    .af-rail { height: 2px; background: rgba(251, 191, 36, 0.1); }
+    .af-rail i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); box-shadow: 0 0 8px rgba(251, 191, 36, 0.5); transform-origin: left; }
+    .autoflow.is-live .af-rail i { transform: scaleX(0); }
+    .af-stage { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .autoflow.is-live .af-stage { min-height: clamp(400px, 52vh, 500px); }
+
+    .af-idle { display: flex; align-items: center; gap: 9px; font-size: 13px; color: rgba(245, 239, 215, 0.55); padding: 11px 14px; border: 1px dashed rgba(255, 255, 255, 0.14); border-radius: var(--radius-sm); max-height: 46px; overflow: hidden; transition: max-height 0.4s var(--ease-enter), opacity 0.35s ease, padding 0.4s ease, border-width 0.4s ease; }
+    .autoflow:not(.is-live) .af-idle { display: none; }
+    .af-idle::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: af-pulse 1.6s ease-in-out infinite; }
+    .af-idle.is-off { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; border-width: 0; }
+
+    /* Panelen: compact "klaar"-regeltje bovenin zodra een stap voorbij is, volledige body als de stap actief is */
+    .af-p-mini { display: none; align-items: center; gap: 9px; font-size: 12px; font-weight: 600; color: rgba(245, 241, 225, 0.75); background: rgba(251, 191, 36, 0.05); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; }
+    .af-p-mini::before { content: "\2713"; flex: 0 0 auto; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); color: #0d0b06; display: grid; place-items: center; font-size: 9px; font-weight: 700; }
+    .af-p-mini span { margin-left: auto; font-weight: 400; font-size: 11px; color: rgba(245, 239, 215, 0.45); }
+    .autoflow.is-live .af-p-mini { display: flex; max-height: 0; opacity: 0; overflow: hidden; padding-top: 0; padding-bottom: 0; border-width: 0; transition: max-height 0.4s var(--ease-enter), opacity 0.35s ease, padding 0.4s ease, border-width 0.4s ease; }
+    .autoflow.is-live .af-panel.is-done .af-p-mini { max-height: 42px; opacity: 1; padding: 8px 12px; border-width: 1px; }
+    /* 0fr->1fr laat de rij exact van/naar de echte contenthoogte animeren,
+       zodat in- en uitklappen synchroon lopen en de stapel niet "bounced". */
+    .autoflow.is-live .af-p-body { display: grid; grid-template-rows: 0fr; opacity: 0; transform: translateY(10px); transition: grid-template-rows 0.5s var(--ease-enter), opacity 0.35s ease, transform 0.5s var(--ease-enter); }
+    .autoflow.is-live .af-p-body > .af-p-clip { min-height: 0; overflow: hidden; }
+    .autoflow.is-live .af-panel.is-on .af-p-body { grid-template-rows: 1fr; opacity: 1; transform: none; }
+
+    .af-card { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 16px; }
+    .af-p-title { display: flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 11px; }
+    .af-p-title span { margin-left: auto; font-weight: 400; letter-spacing: 0.02em; text-transform: none; color: rgba(245, 239, 215, 0.45); }
+    .af-lead-name { font-family: var(--font-display); font-size: 18px; color: #f6f0dc; }
+    .af-lead-co { font-size: 12.5px; color: rgba(245, 239, 215, 0.55); margin-bottom: 11px; }
+    .af-rows { display: grid; gap: 7px; }
+    .af-row { display: flex; align-items: baseline; gap: 10px; font-size: 12.5px; color: var(--text); padding: 7px 11px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 9px; }
+    .af-row b { flex: 0 0 88px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(245, 239, 215, 0.5); }
+    .af-row .ok { margin-left: auto; color: var(--accent); font-size: 11px; }
+    .af-note { font-size: 12px; line-height: 1.5; color: var(--text-soft); background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 9px; padding: 9px 11px; margin: 0; }
+    .af-note b { color: var(--accent); font-weight: 600; }
+    .af-ok-row { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #f6f0dc; }
+    .af-ok-row::before { content: "\2713"; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); color: #0d0b06; display: grid; place-items: center; font-size: 9px; font-weight: 700; }
+    .af-ok-row small { font-weight: 400; color: rgba(245, 239, 215, 0.45); }
+
+    /* Sequentiële onthulling binnen een actief paneel (analyse-velden, agenda-slots, ...) */
+    .autoflow.is-live .af-seq > * { opacity: 0; transform: translateY(6px); transition: opacity 0.35s ease, transform 0.35s ease; }
+    .autoflow.is-live .af-panel.is-on .af-seq > * { opacity: 1; transform: none; }
+    .autoflow.is-live .af-panel.is-on .af-seq > *:nth-child(1) { transition-delay: 0.1s; }
+    .autoflow.is-live .af-panel.is-on .af-seq > *:nth-child(2) { transition-delay: 0.28s; }
+    .autoflow.is-live .af-panel.is-on .af-seq > *:nth-child(3) { transition-delay: 0.46s; }
+    .autoflow.is-live .af-panel.is-on .af-seq > *:nth-child(4) { transition-delay: 0.64s; }
+    .autoflow.is-live .af-panel.is-on .af-seq > *:nth-child(5) { transition-delay: 0.82s; }
+    .autoflow.is-live .af-panel.is-on .af-seq > *:nth-child(6) { transition-delay: 1s; }
+
+    .af-mail-body { font-size: 12.5px; line-height: 1.55; color: var(--text-soft); background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 9px; padding: 11px 13px; }
+    .af-mail-body p { margin: 0 0 8px; font-size: 12.5px; }
+    .af-mail-cta { display: inline-block; padding: 7px 13px; border-radius: var(--radius-pill); background: var(--accent); color: #0d0b06; font-size: 12px; font-weight: 700; }
+    .af-cal-day { font-family: var(--font-display); font-size: 13px; color: #f6f0dc; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 9px; }
+    .af-slot { display: flex; gap: 12px; align-items: center; font-size: 12px; color: rgba(245, 239, 215, 0.4); padding: 8px 11px; border: 1px dashed rgba(255, 255, 255, 0.09); border-radius: 9px; }
+    .af-slot time { flex: 0 0 44px; font-variant-numeric: tabular-nums; }
+    .af-slot.is-booked { border: 1px solid rgba(251, 191, 36, 0.45); background: rgba(251, 191, 36, 0.08); color: #f6f0dc; }
+    .af-slot.is-booked b { display: block; font-size: 12.5px; font-weight: 600; }
+    .af-slot.is-booked small { color: rgba(245, 239, 215, 0.55); }
+    .af-final { text-align: center; padding: 13px 14px; border: 1px solid rgba(251, 191, 36, 0.3); border-radius: var(--radius-md); background: rgba(251, 191, 36, 0.06); }
+    .af-final b { display: block; font-family: var(--font-display); font-size: 15px; color: #f6f0dc; margin-bottom: 3px; }
+    .af-final small { font-size: 12px; color: rgba(245, 239, 215, 0.55); }
+
+    /* Mobiel: stap-koptekst in het paneel zelf (linkerlijst verdwijnt) */
+    .af-p-step { display: none; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+
+    @media (max-width: 900px) {
+      .autoflow-pin { min-height: 0; padding: 0; display: block; }
+      .af-grid { grid-template-columns: 1fr; }
+      .af-steps { display: none; }
+      .af-screen { background: transparent; border: 0; box-shadow: none; overflow: visible; }
+      .af-head, .af-rail { display: none; }
+      .af-stage { padding: 0; gap: 28px; }
+      .af-p-step { display: flex; }
+      .af-p-step .af-num { width: 30px; height: 30px; font-size: 12px; }
+      .af-p-step h3 { margin: 4px 0 0; font-size: 17px; color: #f5f1e1; }
+      .af-p-step p { margin: 5px 0 0; font-size: 13.5px; color: var(--text-soft); }
     }
 
     /* ===== Generic grids reused ===== */
@@ -508,6 +745,15 @@ h1 {
 
     /* Reveal helper: the hidden start state is applied by JS (gsap.set) only,
        so without JS or with reduced motion all content stays visible. */
+
+    @media (prefers-reduced-motion: reduce) {
+      .bh-scroll { animation: none; transform: translateX(-50%); }
+      .webblocks { position: static; min-height: 0; display: grid; gap: var(--space-6); }
+      .webblock { position: static; inset: auto; }
+      .webcode { display: none; }
+      .websiteview .bl-img { animation: none; }
+      .webscan { display: none; }
+    }
   </style>
 
   <link rel="preload" href="/fonts/poppins-600.woff2" as="font" type="font/woff2" crossorigin>
@@ -527,8 +773,8 @@ h1 {
       <nav class="nav" aria-label="Hoofdmenu">
         <button class="nav-toggle" aria-expanded="false" aria-label="Menu openen"><span></span><span></span><span></span></button>
         <ul class="nav-links">
-          <li><a href="/voice-agents">Voicebot</a></li>
           <li><a href="/websites">Websites</a></li>
+          <li><a href="/voice-agents">Voicebot</a></li>
           <li><a href="/ai-op-maat">AI automations</a></li>
           <li><a href="/werk">Werk</a></li>
           <li><a href="/over-ons">Over ons</a></li>
@@ -543,119 +789,225 @@ h1 {
   </header>
 
   <main>
-    <!-- ===== 1. Voicebot hero (sticky scroll storytelling) ===== -->
-    <section class="voice-stage" id="voicebot" aria-label="AI Voicebot">
-      <div class="voice-sticky">
-        <div class="shell voice-layout">
-          <div class="voice-copy">
-            <div class="eyebrow">AI Voicebot / AI-telefonist</div>
-            <h1>Van elk gesprek direct naar actie.</h1>
-            <p class="lede">Smart-Scale neemt oproepen aan, begrijpt klantvragen en regelt automatisch de juiste opvolging. Je mist geen telefoontje meer en elk gesprek levert iets op.</p>
-            <ol class="voice-steps" aria-label="Hoe de voicebot een gesprek afhandelt">
-              <li class="voice-step is-active"><span class="voice-step__no">1</span><span><b>Oproep ontvangen</b><span class="t">De voicebot neemt op, ook buiten kantooruren.</span></span></li>
-              <li class="voice-step"><span class="voice-step__no">2</span><span><b>Vraag begrepen</b><span class="t">De stem wordt omgezet naar een duidelijke vraag.</span></span></li>
-              <li class="voice-step"><span class="voice-step__no">3</span><span><b>Antwoord gegeven</b><span class="t">De AI-core antwoordt rustig en in jouw taal.</span></span></li>
-              <li class="voice-step"><span class="voice-step__no">4</span><span><b>Actie geregeld</b><span class="t">Afspraak, terugbelverzoek of opvolging staat klaar.</span></span></li>
-            </ol>
-            <div class="cta-actions">
-              <a class="btn large" href="https://calendly.com/smart-scale-info/meeting-smart-scale">Plan een gratis adviesgesprek</a>
-              <a class="btn secondary large" href="/voice-agents">Hoe het werkt</a>
+    <!-- ===== 0. Brand hero: network background + wordmark ===== -->
+    <section class="brandhero" id="top" aria-label="Smart-Scale">
+      <canvas class="brandhero-net" data-net aria-hidden="true"></canvas>
+      <div class="brandhero-inner">
+        <div class="brandhero-content">
+          <div class="eyebrow bh-eyebrow" data-hero>AI-bedrijf voor het MKB</div>
+          <h1 class="bh-wordmark" data-hero>Smart-Scale</h1>
+          <p class="bh-sub" data-hero>AI-voicebots die de telefoon aannemen, snelle professionele websites en automatiseringen die je opvolging slimmer maken.</p>
+          <div class="cta-actions bh-cta" data-hero>
+            <a class="btn large" href="https://calendly.com/smart-scale-info/meeting-smart-scale">Plan een gratis adviesgesprek</a>
+            <a class="btn secondary large" href="#voicebot">Bekijk wat we doen</a>
+          </div>
+        </div>
+        <span class="bh-scroll" data-hero-cue aria-hidden="true">Scroll om te ontdekken</span>
+      </div>
+    </section>
+
+    <!-- ===== 1. Websites: code -> site transformatie ===== -->
+    <section class="section webstage" id="websites" aria-label="Websites">
+      <div class="webstage-pin">
+        <div class="shell webstage-grid">
+          <!-- Visual: code layer that becomes a rendered website -->
+          <div class="webvisual" data-web-visual>
+            <div class="webbrowser">
+              <div class="webbar" aria-hidden="true"><i></i><i></i><i></i><span class="weburl">jouw-bedrijf.nl</span></div>
+              <div class="webcanvas">
+                <!-- Code layer (abstract, non-readable) -->
+                <div class="webcode" data-web-code aria-hidden="true">
+                  <span class="cln"><b class="t-key"></b><b class="t-tag"></b></span>
+                  <span class="cln i1"><b class="t-tag"></b><b class="t-str"></b><b class="t-key"></b></span>
+                  <span class="cln i2"><b class="t-key"></b><b class="t-str"></b></span>
+                  <span class="cln i2"><b class="t-tag"></b><b class="t-key"></b><b class="t-str"></b></span>
+                  <span class="cln i1"><b class="t-tag"></b></span>
+                  <span class="cln"><b class="t-key"></b><b class="t-str"></b></span>
+                  <span class="cln i1"><b class="t-tag"></b><b class="t-key"></b></span>
+                  <span class="cln i2"><b class="t-str"></b><b class="t-key"></b><b class="t-tag"></b></span>
+                  <span class="cln i2"><b class="t-key"></b><b class="t-str"></b></span>
+                  <span class="cln i1"><b class="t-tag"></b><b class="t-str"></b></span>
+                  <span class="cln"><b class="t-key"></b><b class="t-tag"></b></span>
+                  <span class="cln i1"><b class="t-tag"></b><b class="t-key"></b><b class="t-str"></b></span>
+                  <span class="cln i2"><b class="t-str"></b></span>
+                  <span class="cln i1"><b class="t-tag"></b></span>
+                </div>
+                <!-- Rendered site, revealed by a left-to-right wipe -->
+                <div class="websiteview" data-web-site>
+                  <div class="bl bl-nav solid"><span class="bl-logo"></span><span class="spacer"></span><span class="bl-navlink"></span><span class="bl-navlink"></span><span class="bl-navlink"></span><span class="bl-navlink"></span></div>
+                  <div class="bl bl-hero">
+                    <div class="bl-lines">
+                      <span class="bl-line lg"></span>
+                      <span class="bl-line md"></span>
+                      <span class="bl-line sm"></span>
+                      <span class="bl-btn"></span>
+                    </div>
+                    <div class="bl-img"></div>
+                  </div>
+                  <div class="bl-cards" data-web-cards>
+                    <div class="bl-card"></div>
+                    <div class="bl-card"></div>
+                    <div class="bl-card"></div>
+                  </div>
+                </div>
+                <div class="webscan" data-web-scan aria-hidden="true"></div>
+              </div>
             </div>
           </div>
 
-          <div class="voice-visual" aria-hidden="true">
-            <svg class="vc-svg" viewBox="0 0 480 480" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.45"></stop>
-                  <stop offset="55%" stop-color="#fbbf24" stop-opacity="0.08"></stop>
-                  <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"></stop>
-                </radialGradient>
-                <linearGradient id="waveIn" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stop-color="#fbbf24" stop-opacity="0"></stop>
-                  <stop offset="45%" stop-color="#fbbf24" stop-opacity="0.65"></stop>
-                  <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.9"></stop>
-                </linearGradient>
-                <linearGradient id="waveOut" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.85"></stop>
-                  <stop offset="55%" stop-color="#fbbf24" stop-opacity="0.45"></stop>
-                  <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"></stop>
-                </linearGradient>
-              </defs>
-
-              <!-- soft inner glow -->
-              <circle class="vc-glow" cx="250" cy="240" r="118" fill="url(#coreGlow)"></circle>
-
-              <!-- incoming voice wave (left -> core) -->
-              <path class="vc-in vc-in-2" d="M6,240 C56,170 96,310 136,240 C166,196 192,284 216,240" stroke="url(#waveIn)" stroke-width="1"></path>
-              <path class="vc-in vc-in-1" d="M6,240 C52,158 98,322 138,240 C168,188 194,292 216,240" stroke="url(#waveIn)" stroke-width="1.6"></path>
-
-              <!-- answer wave (core -> right) -->
-              <path class="vc-out" d="M284,240 C314,208 340,272 372,240 C402,212 432,268 474,240" stroke="url(#waveOut)" stroke-width="1.6"></path>
-
-              <!-- AI core: thin rings, inner node, small orbit nodes -->
-              <g class="vc-core-g">
-                <circle class="vc-ring-soft" cx="250" cy="240" r="58" stroke="#fbbf24" stroke-opacity="0.12" stroke-width="1"></circle>
-                <circle class="vc-ring-soft" cx="250" cy="240" r="42" stroke="#fbbf24" stroke-opacity="0.2" stroke-width="1"></circle>
-                <circle class="vc-ring-core" cx="250" cy="240" r="24" stroke="#fbbf24" stroke-opacity="0.6" stroke-width="1.2"></circle>
-                <circle class="vc-core-dot" cx="250" cy="240" r="4.5" fill="#ffe9a8"></circle>
-                <circle class="vc-node" cx="250" cy="216" r="2.4" fill="#fbbf24"></circle>
-                <circle class="vc-node" cx="274" cy="240" r="2.4" fill="#fbbf24"></circle>
-                <circle class="vc-node" cx="250" cy="264" r="2.4" fill="#fbbf24"></circle>
-                <circle class="vc-node" cx="226" cy="240" r="2.4" fill="#fbbf24"></circle>
-              </g>
-
-              <!-- data points flowing into the core (placed/animated by JS) -->
-              <g class="vc-data">
-                <circle cx="250" cy="240" r="3" fill="#fbbf24"></circle>
-                <circle cx="250" cy="240" r="3" fill="#fbbf24"></circle>
-                <circle cx="250" cy="240" r="3" fill="#fbbf24"></circle>
-                <circle cx="250" cy="240" r="3" fill="#fbbf24"></circle>
-              </g>
-            </svg>
-
-            <!-- premium status cards around the core (real HTML text) -->
-            <div class="vc-card vc-card--tl">Oproep ontvangen</div>
-            <div class="vc-card vc-card--bl">Vraag begrepen</div>
-            <div class="vc-card vc-card--tr">Antwoord gegeven</div>
-            <div class="vc-card vc-card--br">Actie geregeld</div>
+          <!-- Text: three blocks that cross-fade through the phases -->
+          <div class="webtext">
+            <div class="eyebrow">Websites</div>
+            <div class="webblocks">
+              <div class="webblock" data-web-block="0">
+                <h2>Van code naar een site die werkt.</h2>
+                <p class="lede">Een website bouwen kost normaal weken werk. Wij laten AI het zware werk doen, zodat het sneller gaat en scherper geprijsd is.</p>
+              </div>
+              <div class="webblock" data-web-block="1">
+                <h2>De code wordt je website.</h2>
+                <p class="lede">Onder de motorkap schrijft AI mee, wij sturen bij op smaak en merk. Geen lange wachttijd, geen dure bureau-uren.</p>
+              </div>
+              <div class="webblock" data-web-block="2">
+                <h2>Snel, duidelijk en klaar voor klanten.</h2>
+                <p class="lede">Het resultaat is een professionele site die vertrouwen wekt en bezoekers omzet naar aanvragen.</p>
+                <div class="cta-actions">
+                  <a class="btn" href="/websites">Bekijk websites</a>
+                  <a class="btn secondary" href="/werk">Bekijk werk</a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== 2. Websites (self-building) ===== -->
-    <section class="section websites-stage" id="websites">
-      <div class="shell build-layout">
-        <div class="sec-intro" data-fade style="margin-bottom:0">
-          <div class="eyebrow">Websites</div>
-          <h2>Websites die niet alleen mooi zijn, maar klanten opleveren.</h2>
-          <p class="lede">Wij bouwen snelle, duidelijke en professionele websites die vertrouwen wekken en bezoekers omzetten naar aanvragen. Van leeg canvas tot een site die werkt.</p>
-          <div class="cta-actions">
-            <a class="btn" href="/websites">Bekijk websites</a>
-            <a class="btn secondary" href="/werk">Bekijk werk</a>
+    <!-- ===== 2. Voicebot hero: fullscreen sticky journey ===== -->
+    <section class="vhero" id="voicebot" aria-label="AI Voicebot">
+      <div class="vhero-pin">
+        <div class="vhero-head">
+          <div class="eyebrow">AI Voicebot / AI-telefonist</div>
+          <h2>Van elk gesprek direct naar actie.</h2>
+        </div>
+
+        <div class="vhero-mid">
+          <div class="phone-wrap">
+            <span class="phone-glow" aria-hidden="true"></span>
+            <div class="phone">
+              <span class="phone-btn phone-btn-mute" aria-hidden="true"></span>
+              <span class="phone-btn phone-btn-vol-up" aria-hidden="true"></span>
+              <span class="phone-btn phone-btn-vol-down" aria-hidden="true"></span>
+              <span class="phone-btn phone-btn-power" aria-hidden="true"></span>
+              <span class="phone-island" aria-hidden="true"></span>
+              <div class="phone-screen">
+                <div class="phone-bar" aria-hidden="true">
+                  <b>9:41</b>
+                  <div class="phone-bar-icons">
+                    <svg viewBox="0 0 18 12" width="16" height="11" fill="currentColor"><rect x="0" y="7" width="3" height="5" rx="0.8"/><rect x="5" y="5" width="3" height="7" rx="0.8"/><rect x="10" y="3" width="3" height="9" rx="0.8"/><rect x="15" y="0" width="3" height="12" rx="0.8"/></svg>
+                    <svg viewBox="0 0 16 12" width="15" height="11" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M2.2 4.9a8.4 8.4 0 0111.6 0"/><path d="M4.8 7.6a4.6 4.6 0 016.4 0"/><circle cx="8" cy="10.4" r="1.1" fill="currentColor" stroke="none"/></svg>
+                    <svg viewBox="0 0 25 12" width="23" height="11" fill="currentColor"><rect x="0.5" y="0.5" width="20" height="11" rx="2.5" fill="none" stroke="currentColor"/><rect x="2" y="2" width="17" height="8" rx="1.2"/><rect x="21.5" y="4" width="1.8" height="4" rx="0.8"/></svg>
+                  </div>
+                </div>
+
+                <!-- Fase 1: inkomende oproep -->
+                <div class="call-state is-active" data-state="0">
+                  <span class="cs-label">Inkomende oproep</span>
+                  <div class="cs-avatar"><span>K</span><i aria-hidden="true"></i></div>
+                  <div class="cs-name">Nieuwe klant</div>
+                  <div class="cs-sub">+31 6 12 34 56 78</div>
+
+                  <div class="cs-quickactions" aria-hidden="true">
+                    <div class="cs-qa">
+                      <span class="cs-qa-ico"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4.5A2.5 2.5 0 0 1 5.5 2h9A2.5 2.5 0 0 1 17 4.5v6A2.5 2.5 0 0 1 14.5 13H9l-4 3.2V13H5.5A2.5 2.5 0 0 1 3 10.5v-6z"/></svg></span>
+                      <small>Bericht</small>
+                    </div>
+                    <div class="cs-qa">
+                      <span class="cs-qa-ico"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="5" cy="10" r="3"/><circle cx="15" cy="10" r="3"/><line x1="5" y1="13" x2="15" y2="13"/></svg></span>
+                      <small>Voicemail</small>
+                    </div>
+                  </div>
+
+                  <!-- Swipen om op te nemen: de knop volgt de scrollpositie, scrollen = swipen -->
+                  <div class="cs-slide" aria-hidden="true">
+                    <div class="cs-slide-track">
+                      <div class="cs-slide-inner" data-slide-inner>
+                        <span class="cs-slide-fill"></span>
+                        <span class="cs-slide-hint">swipe om op te nemen</span>
+                        <span class="cs-slide-knob">&#9742;</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Fase 2: oproep opgenomen -->
+                <div class="call-state" data-state="1">
+                  <span class="cs-statusline"><i class="cs-dot" aria-hidden="true"></i> AI neemt op</span>
+                  <div class="cs-timer">00:06</div>
+                  <div class="cs-bars" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+                  <div class="cs-sub">Verbonden met de AI-telefonist</div>
+
+                  <div class="cs-callgrid" aria-hidden="true">
+                    <div class="cs-cg-btn"><span class="cs-cg-ico"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 8v4h3l5 4V4L6 8H3z"/><path d="M13.5 7a4 4 0 0 1 0 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><small>Speaker</small></div>
+                    <div class="cs-cg-btn"><span class="cs-cg-ico"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8.5" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="10" cy="10" r="4.2"/></svg></span><small>Opname</small></div>
+                    <div class="cs-cg-btn"><span class="cs-cg-ico"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="7.5" y="2" width="5" height="9" rx="2.5"/><path d="M4.5 9.5a5.5 5.5 0 0 0 11 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="3" y1="3" x2="17" y2="17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><small>Dempen</small></div>
+                    <div class="cs-cg-btn"><span class="cs-cg-ico"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="4" cy="10" r="1.7"/><circle cx="10" cy="10" r="1.7"/><circle cx="16" cy="10" r="1.7"/></svg></span><small>Notities</small></div>
+                    <div class="cs-cg-btn end"><span class="cs-cg-ico"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 8c4.5-3.5 9.5-3.5 14 0l-1.3 2.6c-.3.6-1 .8-1.6.5l-2-1c-.4-.2-.6-.6-.6-1v-1c-1.7-.5-3.3-.5-5 0v1c0 .4-.2.8-.6 1l-2 1c-.6.3-1.3.1-1.6-.5L3 8z"/></svg></span><small>Einde</small></div>
+                    <div class="cs-cg-btn"><span class="cs-cg-ico"><svg viewBox="0 0 20 20" fill="currentColor"><circle cx="4" cy="4" r="1.5"/><circle cx="10" cy="4" r="1.5"/><circle cx="16" cy="4" r="1.5"/><circle cx="4" cy="10" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="16" cy="10" r="1.5"/><circle cx="4" cy="16" r="1.5"/><circle cx="10" cy="16" r="1.5"/><circle cx="16" cy="16" r="1.5"/></svg></span><small>Toetsen</small></div>
+                  </div>
+                </div>
+
+                <!-- Fase 3: gesprek -->
+                <div class="call-state" data-state="2">
+                  <div class="cs-chat">
+                    <div class="cs-bubble cs-in">Hallo, ik wil graag een afspraak maken.</div>
+                    <div class="cs-bubble cs-ai">Natuurlijk, ik help je graag. Welke dag komt het best uit?</div>
+                    <div class="cs-bubble cs-in">Donderdagmiddag als het kan.</div>
+                  </div>
+                </div>
+
+                <!-- Fase 4: vraag begrepen -->
+                <div class="call-state" data-state="3">
+                  <div class="cs-panel">
+                    <span class="cs-check">Vraag begrepen</span>
+                    <ul class="cs-meta">
+                      <li><b>Intentie</b> &middot; Afspraak maken</li>
+                      <li><b>Voorkeur</b> &middot; Donderdagmiddag</li>
+                      <li><b>Contact</b> &middot; Herkend en opgeslagen</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <!-- Fase 5: actie geregeld -->
+                <div class="call-state" data-state="4">
+                  <div class="cs-outputs">
+                    <div class="cs-card">Afspraak ingepland</div>
+                    <div class="cs-card">Terugbelverzoek aangemaakt</div>
+                    <div class="cs-card">Samenvatting verstuurd</div>
+                    <div class="cs-card">Opvolging klaargezet</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="callsteps" aria-hidden="true">
+            <i class="is-active"></i><i></i><i></i><i></i><i></i>
+          </div>
+
+          <div class="vhero-caption" aria-live="polite">
+            <p class="v-phase is-active" data-phase="0"><b>Inkomende oproep</b><span>De AI neemt op wanneer jij dat niet kunt.</span></p>
+            <p class="v-phase" data-phase="1"><b>Oproep opgenomen</b><span>De AI-telefonist gaat direct in gesprek.</span></p>
+            <p class="v-phase" data-phase="2"><b>Gesprek loopt</b><span>De klant stelt zijn vraag, de AI luistert en antwoordt.</span></p>
+            <p class="v-phase" data-phase="3"><b>Vraag begrepen</b><span>De AI herkent de intentie en de details.</span></p>
+            <p class="v-phase" data-phase="4"><b>Actie geregeld</b><span>Elk gesprek wordt omgezet naar concrete acties.</span></p>
           </div>
         </div>
 
-        <div class="build-browser" data-fade>
-          <div class="build-bar"><i></i><i></i><i></i><span class="build-url">jouw-bedrijf.nl</span></div>
-          <div class="build-canvas">
-            <div class="bl bl-nav solid" data-build><span class="bl-logo"></span><span class="spacer"></span><span class="bl-navlink"></span><span class="bl-navlink"></span><span class="bl-navlink"></span></div>
-            <div class="bl bl-hero" data-build>
-              <div class="bl-lines">
-                <span class="bl-line lg"></span>
-                <span class="bl-line md"></span>
-                <span class="bl-line sm"></span>
-                <span class="bl-btn"></span>
-              </div>
-              <div class="bl-img"></div>
-            </div>
-            <div class="bl-cards" data-build>
-              <div class="bl-card"></div>
-              <div class="bl-card"></div>
-              <div class="bl-card"></div>
-            </div>
+        <div class="vhero-cta">
+          <div class="cta-actions">
+            <a class="btn large" href="https://calendly.com/smart-scale-info/meeting-smart-scale">Plan een gratis adviesgesprek</a>
+            <a class="btn secondary large" href="/voice-agents">Hoe het werkt</a>
           </div>
+          <span class="scroll-cue">Scroll</span>
         </div>
       </div>
     </section>
@@ -668,23 +1020,170 @@ h1 {
           <h2>Automatiseer het werk dat je elke dag opnieuw doet.</h2>
           <p class="lede">Smart-Scale koppelt tools, processen en AI zodat opvolging sneller, slimmer en consistenter gebeurt. Losse systemen worden samen één slim proces.</p>
         </div>
+      </div>
 
-        <div class="flow">
-          <svg class="flow-line" viewBox="0 0 2 100" preserveAspectRatio="none" aria-hidden="true">
-            <line class="flow-line__bg" x1="1" y1="0" x2="1" y2="100"></line>
-            <line class="flow-line__draw" x1="1" y1="0" x2="1" y2="100"></line>
-          </svg>
-          <ol class="flow-list">
-            <li class="flow-card card" data-fade><span class="step-no">Stap 1</span><h3>Lead komt binnen</h3><p>Via je website, telefoon of formulier. Niets blijft liggen.</p></li>
-            <li class="flow-card card" data-fade><span class="step-no">Stap 2</span><h3>AI verwerkt informatie</h3><p>De vraag wordt herkend, gelabeld en op de juiste plek gezet.</p></li>
-            <li class="flow-card card" data-fade><span class="step-no">Stap 3</span><h3>CRM wordt bijgewerkt</h3><p>Contactgegevens en context staan automatisch klaar.</p></li>
-            <li class="flow-card card" data-fade><span class="step-no">Stap 4</span><h3>Follow-up wordt verstuurd</h3><p>Een nette mail of bericht op het juiste moment.</p></li>
-            <li class="flow-card card" data-fade><span class="step-no">Stap 5</span><h3>Afspraak wordt gemaakt</h3><p>Direct in de agenda, zonder heen en weer mailen.</p></li>
-            <li class="flow-card card" data-fade><span class="step-no">Stap 6</span><h3>Samenvatting wordt gestuurd</h3><p>Jij krijgt een korte notificatie met wat er speelt.</p></li>
-          </ol>
+      <div class="autoflow" data-autoflow>
+        <div class="autoflow-pin">
+          <div class="shell">
+            <div class="af-grid">
+
+              <ol class="af-steps" aria-label="Workflow-stappen">
+                <li class="af-step" data-af-step>
+                  <span class="af-num">01<span class="af-check" aria-hidden="true">&#10003;</span></span>
+                  <div><h3>Lead komt binnen</h3><p>Via je website, telefoon of formulier komt een nieuwe aanvraag automatisch binnen. Niets blijft liggen.</p></div>
+                </li>
+                <li class="af-step" data-af-step>
+                  <span class="af-num">02<span class="af-check" aria-hidden="true">&#10003;</span></span>
+                  <div><h3>AI begrijpt de aanvraag</h3><p>De AI herkent automatisch wie de klant is, waar de aanvraag over gaat en welke vervolgstap nodig is.</p></div>
+                </li>
+                <li class="af-step" data-af-step>
+                  <span class="af-num">03<span class="af-check" aria-hidden="true">&#10003;</span></span>
+                  <div><h3>CRM wordt bijgewerkt</h3><p>Contactgegevens, notities en context worden automatisch toegevoegd. Je team hoeft niets over te typen.</p></div>
+                </li>
+                <li class="af-step" data-af-step>
+                  <span class="af-num">04<span class="af-check" aria-hidden="true">&#10003;</span></span>
+                  <div><h3>Follow-up wordt verstuurd</h3><p>De klant ontvangt direct een passend bericht op het juiste moment, zonder handmatig werk.</p></div>
+                </li>
+                <li class="af-step" data-af-step>
+                  <span class="af-num">05<span class="af-check" aria-hidden="true">&#10003;</span></span>
+                  <div><h3>Afspraak wordt ingepland</h3><p>De klant kiest een geschikt moment. De afspraak wordt automatisch gepland en direct verwerkt.</p></div>
+                </li>
+                <li class="af-step" data-af-step>
+                  <span class="af-num">06<span class="af-check" aria-hidden="true">&#10003;</span></span>
+                  <div><h3>Jij krijgt de samenvatting</h3><p>Geen administratief werk meer. Je ontvangt alleen de informatie die nodig is om verder te gaan.</p></div>
+                </li>
+              </ol>
+
+              <div class="af-screen">
+                <header class="af-head">
+                  <span class="af-dot" aria-hidden="true"></span>
+                  <span class="af-brand">Smart-Scale Automation</span>
+                  <span class="af-status" data-af-status>Workflow actief</span>
+                </header>
+                <div class="af-rail" aria-hidden="true"><i data-af-rail></i></div>
+
+                <div class="af-stage">
+                  <div class="af-idle" data-af-idle>Workflow actief &mdash; wachten op nieuwe aanvraag&hellip;</div>
+
+                  <!-- Stap 1: lead komt binnen -->
+                  <article class="af-panel" data-af-panel>
+                    <div class="af-p-mini">Lead ontvangen <span>09:42</span></div>
+                    <div class="af-p-body"><div class="af-p-clip">
+                      <div class="af-p-step"><span class="af-num">01</span><div><h3>Lead komt binnen</h3><p>Via je website, telefoon of formulier komt een nieuwe aanvraag automatisch binnen.</p></div></div>
+                      <div class="af-card">
+                        <div class="af-p-title">Nieuwe lead <span>09:42</span></div>
+                        <div class="af-lead-name">Sophie de Vries</div>
+                        <div class="af-lead-co">De Vries Automotive</div>
+                        <div class="af-rows">
+                          <div class="af-row"><b>Aanvraag</b> Interesse in AI-telefoniste</div>
+                          <div class="af-row"><b>Kanaal</b> Websiteformulier</div>
+                        </div>
+                      </div>
+                    </div></div>
+                  </article>
+
+                  <!-- Stap 2: AI-analyse -->
+                  <article class="af-panel" data-af-panel>
+                    <div class="af-p-mini">Aanvraag geanalyseerd</div>
+                    <div class="af-p-body"><div class="af-p-clip">
+                      <div class="af-p-step"><span class="af-num">02</span><div><h3>AI begrijpt de aanvraag</h3><p>De AI herkent wie de klant is, waar de aanvraag over gaat en welke vervolgstap nodig is.</p></div></div>
+                      <div class="af-card">
+                        <div class="af-p-title">AI-analyse</div>
+                        <div class="af-rows af-seq">
+                          <div class="af-row"><b>Naam</b> Sophie de Vries <span class="ok">&#10003;</span></div>
+                          <div class="af-row"><b>Bedrijf</b> De Vries Automotive <span class="ok">&#10003;</span></div>
+                          <div class="af-row"><b>Interesse</b> AI-telefoniste <span class="ok">&#10003;</span></div>
+                          <div class="af-row"><b>Intentie</b> Adviesgesprek aanvragen <span class="ok">&#10003;</span></div>
+                          <div class="af-row"><b>Prioriteit</b> Hoog <span class="ok">&#10003;</span></div>
+                        </div>
+                      </div>
+                    </div></div>
+                  </article>
+
+                  <!-- Stap 3: CRM bijgewerkt -->
+                  <article class="af-panel" data-af-panel>
+                    <div class="af-p-mini">CRM bijgewerkt</div>
+                    <div class="af-p-body"><div class="af-p-clip">
+                      <div class="af-p-step"><span class="af-num">03</span><div><h3>CRM wordt bijgewerkt</h3><p>Contactgegevens, notities en context worden automatisch toegevoegd.</p></div></div>
+                      <div class="af-card">
+                        <div class="af-p-title">CRM &middot; Contact</div>
+                        <div class="af-rows af-seq">
+                          <div class="af-row"><b>Naam</b> Sophie de Vries</div>
+                          <div class="af-row"><b>Telefoon</b> 06 12 34 56 78</div>
+                          <div class="af-row"><b>Status</b> Nieuwe kans</div>
+                          <p class="af-note"><b>Notitie</b> &mdash; Mist regelmatig telefoontjes tijdens drukke werkplaatsmomenten en zoekt een automatische oplossing.</p>
+                          <span class="af-ok-row">CRM bijgewerkt</span>
+                        </div>
+                      </div>
+                    </div></div>
+                  </article>
+
+                  <!-- Stap 4: follow-up -->
+                  <article class="af-panel" data-af-panel>
+                    <div class="af-p-mini">Follow-up verzonden <span>09:43</span></div>
+                    <div class="af-p-body"><div class="af-p-clip">
+                      <div class="af-p-step"><span class="af-num">04</span><div><h3>Follow-up wordt verstuurd</h3><p>De klant ontvangt direct een passend bericht, zonder handmatig werk.</p></div></div>
+                      <div class="af-card">
+                        <div class="af-p-title">Follow-up &middot; E-mail</div>
+                        <div class="af-rows af-seq">
+                          <div class="af-row"><b>Aan</b> Sophie de Vries</div>
+                          <div class="af-row"><b>Onderwerp</b> Bedankt voor je aanvraag</div>
+                          <div class="af-mail-body">
+                            <p>Hoi Sophie, bedankt voor je aanvraag. We hebben je interesse in onze AI-telefoniste ontvangen.</p>
+                            <p>Kies hieronder direct een geschikt moment voor een vrijblijvend gesprek.</p>
+                            <span class="af-mail-cta">Kies een moment</span>
+                          </div>
+                          <span class="af-ok-row">E-mail verzonden <small>09:43</small></span>
+                        </div>
+                      </div>
+                    </div></div>
+                  </article>
+
+                  <!-- Stap 5: afspraak ingepland -->
+                  <article class="af-panel" data-af-panel>
+                    <div class="af-p-mini">Afspraak ingepland <span>wo 15 juli &middot; 10:30</span></div>
+                    <div class="af-p-body"><div class="af-p-clip">
+                      <div class="af-p-step"><span class="af-num">05</span><div><h3>Afspraak wordt ingepland</h3><p>De klant kiest een moment. De afspraak wordt automatisch gepland en verwerkt.</p></div></div>
+                      <div class="af-card">
+                        <div class="af-p-title">Agenda</div>
+                        <div class="af-cal-day">Woensdag 15 juli</div>
+                        <div class="af-rows af-seq">
+                          <div class="af-slot"><time>09:30</time> Beschikbaar</div>
+                          <div class="af-slot is-booked"><time>10:30</time><span><b>Adviesgesprek &middot; Sophie de Vries</b><small>De Vries Automotive &middot; 10:30 &ndash; 11:00</small></span></div>
+                          <div class="af-slot"><time>13:00</time> Beschikbaar</div>
+                          <span class="af-ok-row">Afspraak bevestigd</span>
+                        </div>
+                      </div>
+                    </div></div>
+                  </article>
+
+                  <!-- Stap 6: samenvatting -->
+                  <article class="af-panel" data-af-panel>
+                    <div class="af-p-mini">Samenvatting verstuurd</div>
+                    <div class="af-p-body"><div class="af-p-clip">
+                      <div class="af-p-step"><span class="af-num">06</span><div><h3>Jij krijgt de samenvatting</h3><p>Je ontvangt alleen de informatie die nodig is om verder te gaan.</p></div></div>
+                      <div class="af-card">
+                        <div class="af-p-title">Samenvatting voor jou <span>09:45</span></div>
+                        <div class="af-rows af-seq">
+                          <div class="af-row"><b>Nieuw</b> Afspraak ingepland</div>
+                          <div class="af-row"><b>Contact</b> Sophie de Vries &middot; De Vries Automotive</div>
+                          <div class="af-row"><b>Afspraak</b> Woensdag 15 juli &middot; 10:30</div>
+                          <p class="af-note">Mist regelmatig inkomende oproepen tijdens drukke werkplaatsmomenten en zoekt een oplossing om nieuwe klanten automatisch te woord te staan en op te volgen.</p>
+                          <div class="af-final"><b>Workflow voltooid &#10003;</b><small>6 van 6 stappen automatisch uitgevoerd</small></div>
+                        </div>
+                      </div>
+                    </div></div>
+                  </article>
+                </div>
+              </div>
+
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div class="cta-actions" data-fade style="margin-top: var(--space-7);">
+      <div class="shell">
+        <div class="cta-actions" data-fade style="margin-top: var(--space-6);">
           <a class="btn" href="/ai-op-maat">Over AI automations</a>
           <a class="btn secondary" href="https://calendly.com/smart-scale-info/meeting-smart-scale">Plan een gesprek</a>
         </div>
@@ -836,6 +1335,7 @@ h1 {
     </div>
   </footer>
 
+  <script src="/js/lenis.min.js"></script>
   <script src="/js/gsap.min.js"></script>
   <script src="/js/ScrollTrigger.min.js"></script>
   <script src="/script.js"></script>
