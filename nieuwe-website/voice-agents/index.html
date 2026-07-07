@@ -19,6 +19,290 @@
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" href="/favicon-32x32.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    /* Hero-kop iets kleiner (zelfde maat als Websites-pagina) */
+    .va-hero h1 {
+      font-size: clamp(30px, 3.4vw, 42px);
+    }
+
+    /* Hero in twee kolommen op desktop: tekst links, mockup rechts */
+    @media (min-width: 901px) {
+      .hero-grid.va-hero {
+        grid-template-columns: 1.05fr 1fr;
+        align-items: center;
+      }
+    }
+    @media (max-width: 900px) {
+      .hero-grid.va-hero {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* --- Telefoon-mockup met voorbeeldgesprek (zelfde kaart-stijl als de
+           browser-mockup op de Websites-pagina) --- */
+    .va-phone {
+      width: min(400px, 100%);
+      margin-inline: auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+    .va-phone__top {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid var(--border);
+    }
+    .va-phone__speaker {
+      width: 56px;
+      height: 6px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.18);
+    }
+    .va-phone__body {
+      padding: var(--space-5);
+    }
+    .va-phone__body .eyebrow {
+      margin-bottom: var(--space-4);
+    }
+
+    .va-chat {
+      display: grid;
+      gap: var(--space-3);
+    }
+    .va-msg {
+      max-width: 88%;
+      display: grid;
+      gap: 4px;
+    }
+    .va-msg--agent {
+      justify-self: start;
+    }
+    .va-msg--caller {
+      justify-self: end;
+    }
+    .va-msg__who {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+    }
+    .va-msg--caller .va-msg__who {
+      text-align: right;
+    }
+    .va-msg p {
+      margin: 0;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      line-height: 1.5;
+      max-width: none;
+    }
+    .va-msg--agent p {
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      border-bottom-left-radius: 4px;
+    }
+    .va-msg--caller p {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--border);
+      border-bottom-right-radius: 4px;
+    }
+
+    /* --- Audiospeler-kaart in de hero (zelfde kaart-stijl als de mockups) --- */
+    .va-player {
+      width: min(440px, 100%);
+      margin-inline: auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: var(--space-5);
+      position: relative;
+    }
+    .va-player .eyebrow {
+      margin-bottom: var(--space-4);
+    }
+    .va-player__row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .va-player__play {
+      flex: 0 0 auto;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 1px solid transparent;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: #0d0b06;
+      cursor: pointer;
+    }
+    .va-player__play svg {
+      display: block;
+      margin-left: 3px;
+    }
+    /* Gedempte stijl zolang er nog geen echte opname is (disabled weghalen = volle kleur terug) */
+    .va-player__play:disabled {
+      background: rgba(251, 191, 36, 0.28);
+      color: rgba(245, 239, 215, 0.55);
+      cursor: not-allowed;
+    }
+    .va-player__play:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    /* Waveform: puur decoratief en stilstaand (geen animatie tot er echt afgespeeld kan worden) */
+    .va-player__wave {
+      flex: 1;
+      min-width: 0;
+      color: rgba(251, 191, 36, 0.5);
+    }
+    .va-player__wave svg {
+      display: block;
+      width: 100%;
+      height: 40px;
+    }
+    .va-player__time {
+      flex: 0 0 auto;
+      font-size: 13px;
+      color: var(--text-soft);
+      font-variant-numeric: tabular-nums;
+    }
+    .va-player__title {
+      margin: var(--space-4) 0 0;
+      font-size: 15px;
+      color: var(--text-soft);
+      max-width: none;
+    }
+    .va-player__soon {
+      margin: var(--space-3) 0 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* Subtiele verschijn-animatie bij laden (eenmalig, niets beweegt continu) */
+    @keyframes va-appear {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: none; }
+    }
+    .va-player {
+      animation: va-appear 0.7s var(--ease-enter) 0.15s both;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .va-player { animation: none; }
+    }
+
+    /* --- Leesbaarheid: bodytekst 17px / lh 1.6, regels max ±65ch
+           (zelfde regels als de Websites-pagina) --- */
+    main p,
+    .list-check li,
+    .timeline-item p {
+      font-size: 17px;
+      line-height: 1.6;
+    }
+    main p { max-width: 65ch; }
+    .va-msg p { font-size: 15px; line-height: 1.5; }
+
+    /* --- Afwisselende sectie-achtergronden (zelfde tinten als Websites-pagina) --- */
+    .section-alt {
+      background: linear-gradient(180deg, #14110a, #12100b);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* --- Vinkjes i.p.v. streepjes in de lijst (zelfde stijl als Websites-pagina) --- */
+    .list-check li {
+      display: flex;
+      gap: var(--space-2);
+      align-items: baseline;
+    }
+    .list-check li::before {
+      content: "\2713";
+      font-weight: 700;
+      margin-right: 0;
+      flex: 0 0 auto;
+    }
+
+    /* --- Stappenplan: doorlopende verticale lijn + accent op eindstap
+           (identiek aan de Websites-pagina) --- */
+    .timeline { position: relative; }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 31px;
+      top: 24px;
+      bottom: 24px;
+      width: 2px;
+      background: rgba(251, 191, 36, 0.28);
+    }
+    .timeline-item .marker { position: relative; z-index: 1; background: #29210a; }
+    .timeline-item:last-child .marker {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0d0b06;
+    }
+    @media (max-width: 900px) {
+      /* Kolom-layout behouden zodat de lijn blijft kloppen op mobiel */
+      .timeline-item { grid-template-columns: 48px 1fr; }
+      .timeline-item .marker { width: 48px; height: 48px; }
+      .timeline::before { left: 23px; }
+    }
+
+    /* --- "Hoe het werkt": tijdlijn links, telefoon-mockup als illustratie rechts --- */
+    .va-how {
+      display: grid;
+      gap: clamp(24px, 4vw, 48px);
+    }
+    @media (min-width: 901px) {
+      .va-how {
+        grid-template-columns: 1fr minmax(320px, 400px);
+        align-items: start;
+      }
+    }
+
+    /* --- Twee gelijke kaarten onder de tekst bij "Waar het past" --- */
+    .va-pair {
+      display: grid;
+      gap: var(--space-4);
+      grid-template-columns: repeat(2, 1fr);
+      margin-top: var(--space-6);
+    }
+    @media (max-width: 900px) {
+      .va-pair { grid-template-columns: 1fr; }
+    }
+
+    /* --- Secundaire knoppen als outline (de globale .btn-override forceert
+           alles geel met !important, dus hier expliciet terugdraaien) --- */
+    .btn.ghost {
+      background: transparent !important;
+      color: var(--accent) !important;
+      border-color: var(--accent) !important;
+      box-shadow: none !important;
+    }
+    .btn.ghost:hover,
+    .btn.ghost:focus-visible {
+      background: rgba(251, 191, 36, 0.12) !important;
+    }
+
+    /* --- Zichtbare focus-stijl op links (knoppen hebben die al) --- */
+    main a:focus-visible,
+    footer a:focus-visible,
+    .nav a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+  </style>
 </head>
 <body>
   <header class="site-header">
@@ -46,18 +330,83 @@
 
   <main>
     <section class="hero">
-      <div class="shell">
-        <div class="eyebrow">Voice agents</div>
-        <h1>AI die de telefoon opneemt.</h1>
-        <p class="lede">Een voice agent neemt op, beantwoordt vragen en plant afspraken in. Handig voor bedrijven die veel gebeld worden en niet elke call kunnen aannemen.</p>
-        <div class="cta-actions">
-          <a class="btn large" href="https://calendly.com/smart-scale-info/meeting-smart-scale">Plan een gesprek</a>
-          <a class="btn secondary large" href="https://wa.me/+31683004208" target="_blank" rel="noopener">App ons</a>
+      <div class="shell hero-grid va-hero">
+        <div>
+          <div class="eyebrow">Voice agents</div>
+          <h1>AI die de telefoon opneemt.</h1>
+          <p class="lede">Een voice agent neemt op, beantwoordt vragen en plant afspraken in. Handig voor bedrijven die veel gebeld worden en niet elke call kunnen aannemen.</p>
+          <div class="cta-actions">
+            <a class="btn large" href="https://calendly.com/smart-scale-info/meeting-smart-scale">Plan een gesprek</a>
+            <a class="btn ghost large" href="https://wa.me/+31683004208" target="_blank" rel="noopener">App ons</a>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="sparkles" aria-hidden="true"></div>
+          <div class="va-player">
+            <div class="eyebrow">Voorbeeldgesprek</div>
+            <div class="va-player__row">
+              <button class="va-player__play" type="button" disabled aria-label="Voorbeeldgesprek afspelen (binnenkort beschikbaar)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+              </button>
+              <div class="va-player__wave" aria-hidden="true">
+                <svg viewBox="0 0 216 40" preserveAspectRatio="none">
+                  <rect x="1" y="16" width="3.5" height="8" rx="1.75" fill="currentColor"/>
+                  <rect x="7" y="13" width="3.5" height="14" rx="1.75" fill="currentColor"/>
+                  <rect x="13" y="9" width="3.5" height="22" rx="1.75" fill="currentColor"/>
+                  <rect x="19" y="5" width="3.5" height="30" rx="1.75" fill="currentColor"/>
+                  <rect x="25" y="8" width="3.5" height="24" rx="1.75" fill="currentColor"/>
+                  <rect x="31" y="12" width="3.5" height="16" rx="1.75" fill="currentColor"/>
+                  <rect x="37" y="15" width="3.5" height="10" rx="1.75" fill="currentColor"/>
+                  <rect x="43" y="11" width="3.5" height="18" rx="1.75" fill="currentColor"/>
+                  <rect x="49" y="6" width="3.5" height="28" rx="1.75" fill="currentColor"/>
+                  <rect x="55" y="3" width="3.5" height="34" rx="1.75" fill="currentColor"/>
+                  <rect x="61" y="7" width="3.5" height="26" rx="1.75" fill="currentColor"/>
+                  <rect x="67" y="13" width="3.5" height="14" rx="1.75" fill="currentColor"/>
+                  <rect x="73" y="16" width="3.5" height="8" rx="1.75" fill="currentColor"/>
+                  <rect x="79" y="14" width="3.5" height="12" rx="1.75" fill="currentColor"/>
+                  <rect x="85" y="10" width="3.5" height="20" rx="1.75" fill="currentColor"/>
+                  <rect x="91" y="4" width="3.5" height="32" rx="1.75" fill="currentColor"/>
+                  <rect x="97" y="6" width="3.5" height="28" rx="1.75" fill="currentColor"/>
+                  <rect x="103" y="11" width="3.5" height="18" rx="1.75" fill="currentColor"/>
+                  <rect x="109" y="15" width="3.5" height="10" rx="1.75" fill="currentColor"/>
+                  <rect x="115" y="13" width="3.5" height="14" rx="1.75" fill="currentColor"/>
+                  <rect x="121" y="8" width="3.5" height="24" rx="1.75" fill="currentColor"/>
+                  <rect x="127" y="5" width="3.5" height="30" rx="1.75" fill="currentColor"/>
+                  <rect x="133" y="9" width="3.5" height="22" rx="1.75" fill="currentColor"/>
+                  <rect x="139" y="14" width="3.5" height="12" rx="1.75" fill="currentColor"/>
+                  <rect x="145" y="16" width="3.5" height="8" rx="1.75" fill="currentColor"/>
+                  <rect x="151" y="12" width="3.5" height="16" rx="1.75" fill="currentColor"/>
+                  <rect x="157" y="7" width="3.5" height="26" rx="1.75" fill="currentColor"/>
+                  <rect x="163" y="4" width="3.5" height="32" rx="1.75" fill="currentColor"/>
+                  <rect x="169" y="8" width="3.5" height="24" rx="1.75" fill="currentColor"/>
+                  <rect x="175" y="13" width="3.5" height="14" rx="1.75" fill="currentColor"/>
+                  <rect x="181" y="15" width="3.5" height="10" rx="1.75" fill="currentColor"/>
+                  <rect x="187" y="11" width="3.5" height="18" rx="1.75" fill="currentColor"/>
+                  <rect x="193" y="6" width="3.5" height="28" rx="1.75" fill="currentColor"/>
+                  <rect x="199" y="9" width="3.5" height="22" rx="1.75" fill="currentColor"/>
+                  <rect x="205" y="14" width="3.5" height="12" rx="1.75" fill="currentColor"/>
+                  <rect x="211" y="16" width="3.5" height="8" rx="1.75" fill="currentColor"/>
+                </svg>
+              </div>
+              <span class="va-player__time">0:00 / 0:32</span>
+            </div>
+            <p class="va-player__title">Garage Jansen &mdash; een klant maakt een APK-afspraak.</p>
+            <p class="va-player__soon">Binnenkort: luister hier een echt gesprek.</p>
+            <!-- Zet hier het echte audiobestand neer zodra het is opgenomen: /audio/voorbeeldgesprek.mp3 -->
+            <!-- Activeren zodra het bestand er staat (geen geacteerd/nep-fragment gebruiken):
+                 1. verwijder de regel "Binnenkort: luister hier een echt gesprek." hierboven;
+                 2. haal `disabled` van de play-knop, dan krijgt hij vanzelf zijn volle gele kleur terug;
+                 3. de <source> hieronder wijst al naar het juiste pad.
+                 Verder hoeft er niets aan de structuur te veranderen. -->
+            <audio id="vaAudio" preload="none">
+              <source src="/audio/voorbeeldgesprek.mp3" type="audio/mpeg">
+            </audio>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="section gradient-surface">
+    <section class="section section-alt">
       <div class="shell">
         <div class="section-head">
           <div class="eyebrow">Wat het doet</div>
@@ -82,7 +431,77 @@
     </section>
 
     <section class="section">
-      <div class="shell dual">
+      <div class="shell">
+        <div class="section-head">
+          <div class="eyebrow">Hoe het werkt</div>
+          <h2>Van eerste gesprek naar een agent die opneemt.</h2>
+          <p>Duidelijke stappen. Je weet steeds wat er gebeurt.</p>
+        </div>
+        <div class="va-how">
+        <div class="timeline">
+          <div class="timeline-item" data-reveal>
+            <div class="marker">1</div>
+            <div><h3>Gesprek</h3><p>We kijken of een voice agent bij je past en wat hij moet kunnen.</p></div>
+          </div>
+          <div class="timeline-item" data-reveal>
+            <div class="marker">2</div>
+            <div><h3>Stem en script</h3><p>We stemmen de stem, tone-of-voice en antwoorden af op jouw bedrijf.</p></div>
+          </div>
+          <div class="timeline-item" data-reveal>
+            <div class="marker">3</div>
+            <div><h3>Grenzen bepalen</h3><p>We leggen samen vast wat de agent w&eacute;l en n&iacute;&eacute;t beantwoordt, en wanneer hij doorschakelt naar een mens.</p></div>
+          </div>
+          <div class="timeline-item" data-reveal>
+            <div class="marker">4</div>
+            <div><h3>Koppelen</h3><p>Agenda (of Calendly), WhatsApp of e-mail worden aangesloten.</p></div>
+          </div>
+          <div class="timeline-item" data-reveal>
+            <div class="marker">5</div>
+            <div><h3>Samen testen</h3><p>Jij belt zelf en geeft feedback; we stellen bij.</p></div>
+          </div>
+          <div class="timeline-item" data-reveal>
+            <div class="marker">6</div>
+            <div><h3>Live</h3><p>De agent neemt op. We monitoren en verfijnen waar nodig.</p></div>
+          </div>
+        </div>
+        <aside data-reveal>
+          <div class="va-phone">
+            <div class="va-phone__top">
+              <span class="va-phone__speaker" aria-hidden="true"></span>
+            </div>
+            <div class="va-phone__body">
+              <div class="eyebrow">Voorbeeldgesprek</div>
+              <div class="va-chat">
+                <div class="va-msg va-msg--agent">
+                  <span class="va-msg__who">Agent</span>
+                  <p>Goedemiddag, u spreekt met de assistent van garage Jansen. Waarmee kan ik u helpen?</p>
+                </div>
+                <div class="va-msg va-msg--caller">
+                  <span class="va-msg__who">Beller</span>
+                  <p>Ik wil een afspraak maken voor een APK.</p>
+                </div>
+                <div class="va-msg va-msg--agent">
+                  <span class="va-msg__who">Agent</span>
+                  <p>Dat kan. Donderdag om 10:00 of vrijdag om 14:00, wat past u het beste?</p>
+                </div>
+                <div class="va-msg va-msg--caller">
+                  <span class="va-msg__who">Beller</span>
+                  <p>Vrijdag graag.</p>
+                </div>
+                <div class="va-msg va-msg--agent">
+                  <span class="va-msg__who">Agent</span>
+                  <p>Genoteerd. U ontvangt een bevestiging via WhatsApp.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-alt">
+      <div class="shell">
         <div>
           <div class="eyebrow">Waar het past</div>
           <h2>Voor teams met veel inkomende calls.</h2>
@@ -96,7 +515,7 @@
             <a class="btn" href="https://calendly.com/smart-scale-info/meeting-smart-scale">Plan een gesprek</a>
           </div>
         </div>
-        <div class="usecase-grid">
+        <div class="va-pair">
           <article class="card" data-reveal>
             <div class="eyebrow">Eerlijk</div>
             <h3>Niet voor alles</h3>
@@ -110,7 +529,7 @@
       </div>
     </section>
 
-    <section class="section gradient-surface">
+    <section class="section">
       <div class="shell">
         <div class="section-head">
           <div class="eyebrow">Vragen</div>
@@ -143,7 +562,7 @@
           </div>
           <div class="cta-actions">
             <a class="btn large" href="https://calendly.com/smart-scale-info/meeting-smart-scale">Plan een gesprek</a>
-            <a class="btn secondary large" href="https://wa.me/+31683004208" target="_blank" rel="noopener">App ons</a>
+            <a class="btn ghost large" href="https://wa.me/+31683004208" target="_blank" rel="noopener">App ons</a>
           </div>
         </div>
       </div>

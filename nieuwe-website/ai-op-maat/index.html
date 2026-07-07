@@ -19,6 +19,81 @@
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" href="/favicon-32x32.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    /* --- Leesbaarheid: bodytekst 17px / lh 1.6, regels max ±65ch
+           (zelfde regels als de Websites- en Voice agents-pagina) --- */
+    main p,
+    .timeline-item p {
+      font-size: 17px;
+      line-height: 1.6;
+    }
+    main p { max-width: 65ch; }
+
+    /* --- Afwisselende sectie-achtergronden (zelfde tinten als de andere pagina's) --- */
+    .section-alt {
+      background: linear-gradient(180deg, #14110a, #12100b);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* --- Stappenplan: doorlopende verticale lijn + accent op eindstap
+           (identiek aan de Websites- en Voice agents-pagina) --- */
+    .timeline { position: relative; }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 31px;
+      top: 24px;
+      bottom: 24px;
+      width: 2px;
+      background: rgba(251, 191, 36, 0.28);
+    }
+    .timeline-item .marker { position: relative; z-index: 1; background: #29210a; }
+    .timeline-item:last-child .marker {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0d0b06;
+    }
+    @media (max-width: 900px) {
+      /* Kolom-layout behouden zodat de lijn blijft kloppen op mobiel */
+      .timeline-item { grid-template-columns: 48px 1fr; }
+      .timeline-item .marker { width: 48px; height: 48px; }
+      .timeline::before { left: 23px; }
+    }
+
+    /* --- Twee gelijke kaarten onder de tekst bij "Wanneer dit logisch is" --- */
+    .am-pair {
+      display: grid;
+      gap: var(--space-4);
+      grid-template-columns: repeat(2, 1fr);
+      margin-top: var(--space-6);
+    }
+    @media (max-width: 900px) {
+      .am-pair { grid-template-columns: 1fr; }
+    }
+
+    /* --- Secundaire knoppen als outline (de globale .btn-override forceert
+           alles geel met !important, dus hier expliciet terugdraaien) --- */
+    .btn.ghost {
+      background: transparent !important;
+      color: var(--accent) !important;
+      border-color: var(--accent) !important;
+      box-shadow: none !important;
+    }
+    .btn.ghost:hover,
+    .btn.ghost:focus-visible {
+      background: rgba(251, 191, 36, 0.12) !important;
+    }
+
+    /* --- Zichtbare focus-stijl op links (knoppen hebben die al) --- */
+    main a:focus-visible,
+    footer a:focus-visible,
+    .nav a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+  </style>
 </head>
 <body>
   <header class="site-header">
@@ -52,12 +127,12 @@
         <p class="lede">Chatbots, koppelingen tussen je tools en automatisering van handwerk. Dit is meestal niet de eerste stap. Vaak begint het met een website, en groeit dit daarna mee.</p>
         <div class="cta-actions">
           <a class="btn large" href="https://calendly.com/smart-scale-info/meeting-smart-scale">Plan een gesprek</a>
-          <a class="btn secondary large" href="https://wa.me/+31683004208" target="_blank" rel="noopener">App ons</a>
+          <a class="btn ghost large" href="https://wa.me/+31683004208" target="_blank" rel="noopener">App ons</a>
         </div>
       </div>
     </section>
 
-    <section class="section gradient-surface">
+    <section class="section section-alt">
       <div class="shell">
         <div class="section-head">
           <div class="eyebrow">Wat we bedoelen</div>
@@ -82,7 +157,7 @@
     </section>
 
     <section class="section">
-      <div class="shell dual">
+      <div class="shell">
         <div>
           <div class="eyebrow">Wanneer dit logisch is</div>
           <h2>Meestal als de basis staat.</h2>
@@ -90,10 +165,10 @@
           <p>We zijn daar eerlijk in. Liever een kleine, werkende stap dan een groot systeem dat niemand gebruikt.</p>
           <div class="cta-actions">
             <a class="btn" href="/websites">Begin bij een website</a>
-            <a class="btn secondary" href="https://wa.me/+31683004208" target="_blank" rel="noopener">App ons</a>
+            <a class="btn ghost" href="https://wa.me/+31683004208" target="_blank" rel="noopener">App ons</a>
           </div>
         </div>
-        <div class="usecase-grid">
+        <div class="am-pair">
           <article class="card" data-reveal>
             <div class="eyebrow">Aanpak</div>
             <h3>Klein beginnen</h3>
@@ -103,6 +178,42 @@
             <h3>Grip en grenzen</h3>
             <p>Duidelijke afspraken over wat de AI wel en niet doet. Geen black box, wel iets dat je vertrouwt.</p>
           </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-alt">
+      <div class="shell">
+        <div class="section-head">
+          <div class="eyebrow">Hoe het werkt</div>
+          <h2>Van &eacute;&eacute;n concreet probleem naar een werkende stap.</h2>
+          <p>Duidelijke stappen. Je weet steeds wat er gebeurt.</p>
+        </div>
+        <div class="timeline">
+          <div class="timeline-item" data-reveal>
+            <div class="marker">1</div>
+            <div><h3>Gesprek</h3><p>We bespreken je proces en waar tijd of klantcontact verloren gaat.</p></div>
+          </div>
+          <div class="timeline-item" data-reveal>
+            <div class="marker">2</div>
+            <div><h3>E&eacute;n concreet probleem kiezen</h3><p>We pakken niet alles tegelijk, maar &eacute;&eacute;n duidelijke, meetbare stap.</p></div>
+          </div>
+          <div class="timeline-item" data-reveal>
+            <div class="marker">3</div>
+            <div><h3>Voorstel</h3><p>Je krijgt te horen wat we bouwen, wat het oplevert en wat het niet doet.</p></div>
+          </div>
+          <div class="timeline-item" data-reveal>
+            <div class="marker">4</div>
+            <div><h3>Bouwen</h3><p>We ontwikkelen de oplossing en houden je tussentijds op de hoogte.</p></div>
+          </div>
+          <div class="timeline-item" data-reveal>
+            <div class="marker">5</div>
+            <div><h3>Testen</h3><p>Jij en je team proberen het uit voordat het echt in gebruik gaat.</p></div>
+          </div>
+          <div class="timeline-item" data-reveal>
+            <div class="marker">6</div>
+            <div><h3>Live en uitbreiden</h3><p>Werkt de stap? Dan bouwen we in overleg verder.</p></div>
+          </div>
         </div>
       </div>
     </section>
@@ -117,7 +228,7 @@
           </div>
           <div class="cta-actions">
             <a class="btn large" href="https://calendly.com/smart-scale-info/meeting-smart-scale">Plan een gesprek</a>
-            <a class="btn secondary large" href="https://wa.me/+31683004208" target="_blank" rel="noopener">App ons</a>
+            <a class="btn ghost large" href="https://wa.me/+31683004208" target="_blank" rel="noopener">App ons</a>
           </div>
         </div>
       </div>
